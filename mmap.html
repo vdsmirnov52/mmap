@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Weather map</title>
+	<link rel="stylesheet" href="/js/leaflet/leaflet.css"	crossorigin="" />
+	<script src="/js/leaflet/leaflet.js" crossorigin=""></script>
+    <!--[if lte IE 8]><link rel="stylesheet" href="http://leaflet.cloudmade.com/dist/leaflet.ie.css" /><![endif]-->
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script src="http://openweathermap.org/js/leaflet-layer.js"></script>
+        <script src="http://api-maps.yandex.ru/2.0/?load=package.map&lang=ru-RU" type="text/javascript"></script>
+        <script src="/js/layer/tile/Yandex.js"></script>
+	<!-- Chart	
+        <script src="/js/chart/Chart.bundle.js"></script -->
+	<script type='text/javascript' src='/jq/jquery.onajax_answer.js'></script>
+	<script type='text/javascript' src='/jq/jquery.js'></script>
+
+	<link rel='stylesheet' type='text/css' href='/css/mmaps.css' />
+
+<script type="text/javascript">
+function	set_shadow (shstat) {	$.ajax({data: 'shstat='+ shstat +'&' +$('form').serialize()});	}
+
+</script>
+<script type="text/javascript">
+	$(document).ready(function () {
+	$.ajaxSetup({ url: "/cgi-bin/ajax.cgi?this=ajax", type: "post", error: onAjaxError, success: onAjaxSuccess, timeout: 30000 });
+	$('#map').css({'height': (-100 + document.documentElement.clientHeight) +'px', 'width': '100%'});	//(-10 + document.documentElement.clientWidth) +'px'});
+//	$('#menu').css({'width': (-10 + document.documentElement.clientWidth) +'px'});
+	set_shadow('get_tansport');
+
+var timerId = setInterval(set_shadow, 20000, 'view_canvas');
+
+	mymap = L.map('map').setView([56.32354, 43.99121], 12);
+
+var	osmLayer = new L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+	maxZoom: 18,
+	attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+	}).addTo(mymap);
+/*
+var	marker = L.marker([56.32354, 43.99121]).addTo(mymap)
+	.bindPopup('A pretty CSS3 popup.<br> и текст по Русски.')
+	.openPopup();
+*/
+var	roadsLayer = new L.tileLayer('http://212.193.103.5/{alias}/{z}/{x}/{y}.png', {maxZoom: 18, attribution: '&copy; RNIC', alias: 'enk2'});
+var	yndx = new L.Yandex();
+var	ytraffic = new L.Yandex("null", {traffic:true, opacity:0.8, overlay:true});
+
+var	baseMaps = { "OpenStreetMap": osmLayer, 'Дороги Нижнего Новгорода': roadsLayer, 'L.Yandex': yndx },
+	overlays = { };	//"Marker": marker};
+
+var	layersControl = new L.Control.Layers(baseMaps, overlays),	// overlayMaps),
+	popup = new L.Popup();
+
+mymap.addControl(layersControl);
+mymap.on('click', (e) => {
+    popup.setLatLng(e.latlng);
+    popup.setContent('Point ' +
+      ' (' + e.latlng.lat.toFixed(6) +
+      ', ' + e.latlng.lng.toFixed(6) + ')');
+    mymap.openPopup(popup);
+  })
+});
+
+var dict_ts_list = {};
+
+function	out_data (data) {
+	clear_ts_list ();
+	var LeafIcon = L.Icon.extend({options: {iconAnchor: [12,14], popupAnchor: [0, -18]}});	//, shadowAnchor: [16,37], shadowUrl: '/img/marker-shadow.png', shadowSize: [51, 37]}});
+	var tsIcons = {};
+	tsIcons['blue'] = new LeafIcon({iconUrl: '/img/circle-blu.svg'})
+	tsIcons['green'] = new LeafIcon({iconUrl: '/img/circle-grn.svg'})
+	tsIcons['grey'] = new LeafIcon({iconUrl: '/img/circle-gry.svg'})
+	tsIcons['red'] = new LeafIcon({iconUrl: '/img/circle-red.svg'})
+//	alert (data);
+
+	var plist = eval(data);	//'[["44.054517", "56.366", "1520845490", "Привет QWER"], [ "44.068579", "56.372314", "1520846572", "В132ХА152" ]]');	//data);
+//	alert (plist);
+	for (var i=0; i<=plist.length-1; i++) {
+//		alert (plist[i])
+		if (tsIcons.hasOwnProperty(plist[i][4]))
+			var jIcon = tsIcons[plist[i][4]];
+		else	var jIcon = tsIcons['red'];
+		dict_ts_list[i] = L.marker([plist[i][1],plist[i][0]], {icon: jIcon}).addTo(mymap).bindPopup(plist[i][3]+'<br>' +plist[i][2])	// +'<br>' +plist[i][4] +' # '+ i)
+	}
+}
+function	clear_ts_list () {
+//	alert('clear_ts_list');
+	for (k in dict_ts_list) {
+		if (dict_ts_list.hasOwnProperty(k))	dict_ts_list[k].remove();
+		delete(dict_ts_list[k])
+	}
+}
+
+function mmm (txt) {
+	var LeafIcon = L.Icon.extend({options: {iconAnchor: [12,24], popupAnchor: [0, -27], shadowAnchor: [16,37], shadowUrl: '/img/marker-shadow.png', shadowSize: [51, 37]}});
+	var redIcon = new LeafIcon({iconUrl: '/img/circle-red.svg'})
+	var marker = [L.marker([56.3271,44.0074], {icon: redIcon}).addTo(mymap).bindPopup(txt).openPopup(),
+	L.marker([56.31271,44.01074], {icon: redIcon}).addTo(mymap).bindPopup('111 txt').openPopup()];
+	L.marker([56.3271,44.02074], {icon: redIcon}).addTo(mymap).bindPopup('222 txt').openPopup();
+	L.marker([56.33271,44.03074], {icon: redIcon}).addTo(mymap).bindPopup('333 txt');	//.openPopup();
+} 
+</script>
+  </head>
+  <body>
+	<form name='myForm' action='http://212.193.103.21/tmp/mmap.html' method='post'><fieldset class='hidd'>
+	<input name='org_inn' type='hidden' value='0' />
+	<input name='bm_ssys' type='hidden' value='131072' />
+	</fieldset>
+	<div id='menu' style="min-width: 30px; max-width: 2100px; width: 100%; margin: 0px; padding: 0px;">
+	<table style="width: 100%; padding: 0px; border-spacing: 0px">
+	<tr>
+	<td><div id='view_gz' class='asbutton' onclick="set_shadow ('view_gzones');"> Зоны обслуживания </div></td>
+	<td><div id='set_org' class='asbutton' onclick="set_shadow ('set_organizations');"> Выбор организации </div></td>
+	<td><div id='load_ts' class='asbutton' onclick="set_shadow ('get_tansport');"> Обновить ТС </div></td>
+	<td><div id='clear_ts' class='asbutton' onclick="clear_ts_list();"> Очистить </div></td>
+	<!--td><div id='test' class='asbutton' onclick="alert('mymap.getZoom: ' +mymap.getZoom());"> &copy; </div></td-->
+	<!--td><div id='test' class='asbutton' onclick="alert('mymap.getZoom: ' +document.myForm.org_inn.value);" > &copy; </div></td-->
+	<td><div id='reload' class='asbutton' onclick="document.myForm.submit();" title="Обновить"><img src="../img/reload_w24.png"></div></td>
+	</tr>
+	</table></div>
+
+    <div id="map" style="min-width: 300px; min-height: 300px; max-width: 2100px; height: 800px; border: thin solid #668;"></div>
+
+	<!--input id='sss' type='button' value='Обновить транспорк' onclick="set_shadow ('get_tansport');" />
+	<input id='sss' type='button' value='Выбор организации' onclick="set_shadow ('set_organizations');" />
+	<input id='sss' type='button' value='Зоны обслуживания' onclick="set_shadow ('view_gzones');" />
+	<img src='/img/circle-red.svg' onclick="clear_ts_list();" tit='Очистить' />
+	<img src='/img/circle-grn.svg' onclick="alert('mymap.getZoom: ' +mymap.getZoom());" >
+	<img src='/img/circle-blu.svg' onclick="alert(mymap);" >
+	<img src='/img/circle-gry.svg' -->
+
+	</form>
+	<div id='widget' type='hidden' style=''></div> 
+	<div id='warnn' style='top: 100px left: 100px; position: absolute;' >'warnn'</div> 
+  </body>
+</html>

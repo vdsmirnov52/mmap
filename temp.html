@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Test Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css"
+	integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ=="
+	crossorigin="" />
+    <!--[if lte IE 8]><link rel="stylesheet" href="http://leaflet.cloudmade.com/dist/leaflet.ie.css" /><![endif]-->
+    <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js" 
+	integrity="sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw=="
+	crossorigin=""></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script src="http://openweathermap.org/js/leaflet-layer.js"></script>
+        <script src="http://api-maps.yandex.ru/2.0/?load=package.map&lang=ru-RU" type="text/javascript"></script>
+        <script src="/js/layer/tile/Yandex.js"></script>
+	<!-- Chart	-->
+        <script src="/js/chart/Chart.bundle.js"></script>
+	<script type='text/javascript' src='/jq/jquery.onajax_answer.js'></script>
+	<script type='text/javascript' src='/jq/jquery.js'></script>
+
+	<script type='text/javascript' src='/js/view_canvas.js'></script>	// Test 
+
+	<link rel='stylesheet' type='text/css' href='/css/mmaps.css' />
+	<link rel='stylesheet' type='text/css' href='/css/style.css' />
+
+<script type="text/javascript">
+function	set_shadow (shstat) {	$.ajax({data: 'shstat='+ shstat +'&' +$('form').serialize()});	}
+
+</script>
+<script type="text/javascript">
+	$(document).ready(function () {
+	$.ajaxSetup({ url: "/cgi-bin/ajax.cgi?this=ajax", type: "post", error: onAjaxError, success: onAjaxSuccess, timeout: 30000 });
+/*
+navigator.geolocation.getCurrentPosition (
+	function (position) { alert ('latitude =' + position.coords.latitude +", " + position.coords.longitude); } );
+
+var timerId = setInterval(set_shadow, 10000, 'view_canvas');
+*/
+	mymap = L.map('map').setView([56.32354, 43.99121], 12);
+var	osmLayer = new L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+	maxZoom: 18,
+	attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+	}).addTo(mymap);
+
+var	marker = L.marker([56.32354, 43.99121]).addTo(mymap)
+	.bindPopup('A pretty CSS3 popup.<br> и текст по Русски.')
+	.openPopup();
+
+var	divmark = L.marker([56.32354, 43.99121], {icon: L.divIcon({ html:'QWERTY Тест', className: 'icon' })}).addTo(mymap);
+
+//	.Title('.Title')
+var	roadsLayer = new L.tileLayer('http://212.193.103.5/{alias}/{z}/{x}/{y}.png', {maxZoom: 18, attribution: '&copy; RNIC', alias: 'enk2'});
+var	yndx = new L.Yandex();
+var	ytraffic = new L.Yandex("null", {traffic:true, opacity:0.8, overlay:true});
+
+var	baseMaps = { "OpenStreetMap": osmLayer, 'Дороги Нижнего Новгорода': roadsLayer, 'L.Yandex': yndx },
+	overlays = { "Marker": marker, "divmark": divmark};
+
+var	layersControl = new L.Control.Layers(baseMaps, overlays),	// overlayMaps),
+	popup = new L.Popup();
+
+mymap.addControl(layersControl);
+mymap.on('click', (e) => {
+    popup.setLatLng(e.latlng);
+    popup.setContent('Point ' +
+      ' (' + e.latlng.lat.toFixed(6) +
+      ', ' + e.latlng.lng.toFixed(6) + ')');
+    mymap.openPopup(popup);
+  })
+});
+///////////////////////////////////////////////////
+
+var dict_ts_list = [];
+var dict_ddddddd = [];
+
+function	out_data (data) {
+	clear_ts_list ();
+	var LeafIcon = L.Icon.extend({options: {iconAnchor: [12,24], popupAnchor: [0, -27]}});	//, shadowAnchor: [16,37], shadowUrl: '/img/marker-shadow.png', shadowSize: [51, 37]}});
+	var tsIcons = {};
+	tsIcons['blue'] = new LeafIcon({iconUrl: '/img/circle-blu.svg'});
+	tsIcons['green'] = new LeafIcon({iconUrl: '/img/circle-grn.svg'});
+	tsIcons['grey'] = new LeafIcon({iconUrl: '/img/circle-gry.svg'});
+	tsIcons['red'] = new LeafIcon({iconUrl: '/img/circle-red.svg'});
+//	alert (data);
+//	44.002833,56.237317,green,<b>52АА3252</b> <span class=bferr>Стоит</span><br><b>Ооо  Эксавтодор </b>,icon,
+//	43.94325,56.23325,green,<b>52АА3253</b> &nbsp; v:5км/ч<br><b>Ооо  Эксавтодор </b>,icon,
+	var plist = eval(data);	//'[["44.054517", "56.366", "1520845490", "Привет QWER"], [ "44.068579", "56.372314", "1520846572", "В132ХА152" ]]');	//data);
+//	alert (plist);
+	for (var i=0; i<=plist.length-1; i++) {
+//		alert (plist[i])
+		var YX = plist[i][0];
+		var opts = plist[i][1]
+		if (opts['icon'] && tsIcons.hasOwnProperty(opts['icon'])) {
+			var jIcon = tsIcons[opts['icon']];
+		} else	var jIcon = tsIcons['red'];
+		/*
+		if (tsIcons.hasOwnProperty(plist[i][2]))
+			var jIcon = tsIcons[plist[i][2]];
+		else	var jIcon = tsIcons['red'];
+		*/
+		dict_ts_list[i] = L.marker(YX, {icon: jIcon}).addTo(mymap).bindTooltip(opts['gosnum']).bindPopup(opts['gosnum'] +'<br>\\n' +opts['dt'] +'<br>' +opts['sp'] +' # '+ i);
+	//	dict_ddddddd[i] = L.marker(YX, {icon: L.divIcon({className: 'icon', html: opts['gosnum']})}).addTo(mymap);
+	}
+//	overlays['GosN'] = dict_ddddddd;
+}
+function	clear_ts_list () {
+//	alert('clear_ts_list');
+	for (k in dict_ts_list) {
+		if (dict_ts_list.hasOwnProperty(k))	dict_ts_list[k].remove();
+		delete(dict_ts_list[k])
+	}
+}
+
+function mmm (txt) {
+	var LeafIcon = L.Icon.extend({options: {iconAnchor: [12,24], popupAnchor: [0, -27], shadowAnchor: [16,37], shadowUrl: '/img/marker-shadow.png', shadowSize: [51, 37]}});
+	var redIcon = new LeafIcon({iconUrl: '/img/circle-red.svg'})
+	var marker = [L.marker([56.3271,44.0074], {icon: redIcon}).addTo(mymap).bindPopup(txt).openPopup(),
+	L.marker([56.31271,44.01074], {icon: redIcon}).addTo(mymap).bindPopup('111 txt').openPopup()];
+	L.marker([56.3271,44.02074], {icon: redIcon}).addTo(mymap).bindPopup('222 txt').openPopup();
+	L.marker([56.33271,44.03074], {icon: redIcon}).addTo(mymap).bindPopup('333 txt');	//.openPopup();
+} 
+function check_bounds () {
+	var bounds = mymap.getBounds();
+	var BBB = 'YX: ' + bounds['_northEast'] +', 00: ' + bounds['_southWest'];
+//	alert (check_bounds);
+//	alert (bounds.getNorthEast() +' \\n '+ bounds.getSouthWest());
+//	orthEast: LatLng(56.399655, 44.145813)	- Левый верхний
+//	southWest: LatLng(56.247356, 43.836823)	- Првыый нижний
+	alert (BBB);
+}
+</script>
+  </head>
+  <body>
+	<form name='myForm' action='http://212.193.103.21/tmp/temp.html' method='post'><fieldset class='hidd'>
+	<input name='org_inn' type='hidden' value='0' />
+	</fieldset>
+	<div id='menu' style="min-width: 130px; min-height: 20px; max-width: 1100px;">
+	<table width=100%>
+	<tr>
+	<td><div id='view_gz' class='asbutton' onclick="set_shadow ('view_gzones');"> Зоны обслуживания </div></td>
+	<td><div id='set_org' class='asbutton' onclick="set_shadow ('set_organizations');"> Выбор организации </div></td>
+	<td><div id='load_ts' class='asbutton' onclick="set_shadow ('get_tansport');"> Обновить ТС </div></td>
+	<td><div id='clear_ts' class='asbutton' onclick="clear_ts_list();"> Очистить </div></td>
+	<!--td><div id='test' class='asbutton' onclick="alert('mymap.getZoom: ' +mymap.getZoom());"> &copy; </div></td-->
+	<!--td><div id='test' class='asbutton' onclick="alert('mymap.getZoom: ' +document.myForm.org_inn.value);" > &copy; </div></td-->
+	<td><div id='last_time' class='asbutton'> &nbsp;&nbsp;&nbsp;&nbsp; </div></td>
+	<td><div id='reload' class='asbutton' onclick="document.myForm.submit();" title="Обновить"><img src="../img/reload_w24.png"></div></td>
+	</tr>
+	</table></div>
+
+	<table><tr style='vertical-align: top'><td>
+    <div id="map" style="width: 900px; height: 800px; border: thin solid #668;"></div>
+	</td><td>
+	<input id='sss' type='button' value='getBounds' onclick="check_bounds();" />
+	<input id='sss' type='button' value='canvas' onclick="view_canvas();" />
+	<input id='sss' type='button' value='Get TS' onclick="set_shadow ('update_ts_list');" />
+	<img src='/img/circle-red.svg' onclick="clear_ts_list();" />
+	<img src='/img/circle-blu.svg' >
+	<img src='/img/circle-gry.svg' >
+	<img src='/img/circle-grn.svg' >
+	<!--img src='/img/zzz.svg' width=66px height=66px onclick="mmm('QWERTY');" />
+	<img src='/img/zzz-R.svg'-->
+	<br />
+	<canvas id="popChart" style="border: thin solid #668; width: 600px; height: 400px;"></canvas>
+	<div id="log" style="border: thin solid #668; width: 600px; height: 300px; overflow: auto;"></div>
+	</td></tr></table>
+	</form>
+	<div id="warnn" >"warnn"</div> 
+	<div id=widget >widget</div> 
+  </body>
+</html>

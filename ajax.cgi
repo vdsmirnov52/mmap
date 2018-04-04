@@ -1,0 +1,94 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+import  cgi, os, sys
+import  time
+import  urllib
+import  urlparse
+
+LIBRARY_DIR = r"/home/smirnov/MyTests/CGI/lib/"	# Путь к рабочей директории (библиотеке)
+CONF_PATHNAME = r"/home/smirnov/MyTests/CGI/sys.ini"
+sys.path.insert(0, LIBRARY_DIR)
+request = {}
+import	cglob
+import	main_page
+
+import	json
+
+def     check ():
+	try:
+		request = cglob.get_theform ()
+		
+		CPYSESSID = ''
+		# 'this': 'ajax', 'shstat': 'view_canvas'
+		if os.environ.has_key('HTTP_REFERER') and os.environ['REQUEST_METHOD'] == 'POST':
+			print '\n'
+			referer = os.environ['HTTP_REFERER']
+			shstat = request.get('shstat')
+			import	recv_tools as rt
+			print time.strftime("~last_time|%T", time.localtime(time.time()))
+			print '~warnn|'	#, request, shstat
+
+			if shstat == 'get_tansport':
+				ts_list = rt.get_ts(request)
+				if ts_list:
+					print "~eval|out_data('%s');" % json.dumps(ts_list)	#rt.get_ts(request))
+				else:	print "~eval|document.myForm.org_inn.value='0'; alert('У организации ИНН: %s \\nНет АКТИВНЫХ транспортных средств!');" % request.get('org_inn')
+			elif shstat == 'view_canvas':
+				print time.strftime("%T %d-%m-%Y", time.localtime(time.time()))
+				ts_list = rt.get_ts(request)
+				if ts_list:
+					print "~eval|document.myForm.org_inn.value='0'; out_data('%s');" % json.dumps(ts_list)	#rt.get_ts(request))
+			#	else:	print "~eval|alert('У организации ИНН: %s \\nНет транспортных средств!');" % request.get('org_inn')
+			elif shstat == 'view_gzones':
+				print '~widget|', rt.view_gzones (request)
+			elif shstat == 'set_organizations':
+				print '~widget|', rt.set_organizations (request)
+			elif shstat == 'update_ts_list':
+				print '~log|'	#, request
+			#	import	recv_tools as rt
+				rt.update_ts_list (request)
+			else:
+				print 'shstat:', shstat, request
+				print '<br>HTTP_REFERER:', referer , os.path.split(referer)
+			'''
+			if request.has_key('this'):
+				if request['this'] == 'ajax':
+					import  ajax
+					ajax.main(os.environ['SCRIPT_NAME'], request, referer)
+				sys.exit()
+			elif os.environ.has_key('HTTP_COOKIE') and ('CPYSESSID' in os.environ['HTTP_COOKIE']):
+				request['disp'] = '123'
+				request['message'] = ""
+			else:	pass
+			'''
+			sys.exit()
+		elif request.has_key('this') and request['this'] == 'new_widow':
+			print """Content-Type: text/html; charset=utf-8\n\n<!DOCTYPE HTML>\n<html>"""
+	#		cglob.ppobj(dict(os.environ))
+			conf = cglob.get_config(CONF_PATHNAME)
+			main_page.new_widow  (request, conf)
+			sys.exit()
+#		else:
+	#	print """Content-Type: text/html; charset=utf-8\n\n<!DOCTYPE HTML>"""
+		print """Content-Type: text/html; charset=utf-8\n%s\n\n<!DOCTYPE HTML>""" % CPYSESSID
+		print '<html>'
+		conf = cglob.get_config(CONF_PATHNAME)
+		main_page.main(request, conf)
+	#	print "CPYSESSID:", CPYSESSID
+	#	cglob.ppobj(dict(os.environ))
+	except SystemExit:	pass
+	except:
+		exc_type, exc_value = sys.exc_info()[:2]
+		print "check:", exc_type, exc_value
+
+if __name__ == "__main__":
+#	print "Content-Type: text/html; charset=utf-8\n"
+#	print '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">\n'
+#	print '<html>'
+	try:
+		check ()
+	except:
+		exc_type, exc_value = sys.exc_info()[:2]
+		print "EXCEPT:", exc_type, exc_value
+
