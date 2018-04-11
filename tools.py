@@ -114,7 +114,7 @@ if __name__ == "__main__":
 		DBC = dbtools.dbtools(DBASES['contracts'])
 		DBR = dbtools.dbtools(DBASES['receiver'])
 
-	#	get_transports (get_org (5262311940))
+	#	get_transports (get_org (5262021430))
 		get_organizations (131072)
 		get_org ()
 	except SystemExit:	pass

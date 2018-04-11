@@ -32,16 +32,17 @@ var timerId = setInterval(set_shadow, 20000, 'view_canvas');
 
 	mymap = L.map('map').setView([56.32354, 43.99121], 12);
 
+var	rnic_nn = ' &copy; <a href="http://rnc52.ru/" title="РНИЦ Нижегородской области">RNIC 52</s>';
 var	osmLayer = new L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
 	maxZoom: 18,
-	attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+	attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors |' + rnic_nn
 	}).addTo(mymap);
 /*
 var	marker = L.marker([56.32354, 43.99121]).addTo(mymap)
 	.bindPopup('A pretty CSS3 popup.<br> и текст по Русски.')
 	.openPopup();
 */
-var	roadsLayer = new L.tileLayer('http://212.193.103.5/{alias}/{z}/{x}/{y}.png', {maxZoom: 18, attribution: '&copy; RNIC', alias: 'enk2'});
+var	roadsLayer = new L.tileLayer('http://212.193.103.5/{alias}/{z}/{x}/{y}.png', {maxZoom: 18, attribution: rnic_nn, alias: 'enk2'});
 var	yndx = new L.Yandex();
 var	ytraffic = new L.Yandex("null", {traffic:true, opacity:0.8, overlay:true});
 
@@ -60,7 +61,61 @@ mymap.on('click', (e) => {
     mymap.openPopup(popup);
   })
 });
+///////////////////////////////////////////////////
+var dict_ts_list = [];	// Транспорт
+var list_regionn = [];	// районы города
 
+function	clear_map_object (obj) {
+	for (k in obj) {
+		if (obj.hasOwnProperty(k))	obj[k].remove();
+		delete(obj[k])
+	}
+}
+
+function	out_data (data) {
+//	clear_ts_list ();
+	clear_map_object (dict_ts_list);
+	var LeafIcon = L.Icon.extend({options: {iconAnchor: [12,24], popupAnchor: [0, -27]}});	//, shadowAnchor: [16,37], shadowUrl: '/img/marker-shadow.png', shadowSize: [51, 37]}});
+	var tsIcons = {};
+	tsIcons['blue'] = new LeafIcon({iconUrl: '/img/circle-blu.svg'});
+	tsIcons['green'] = new LeafIcon({iconUrl: '/img/circle-grn.svg'});
+	tsIcons['grey'] = new LeafIcon({iconUrl: '/img/circle-gry.svg'});
+	tsIcons['red'] = new LeafIcon({iconUrl: '/img/circle-red.svg'});
+//	alert (data);
+	var plist = eval(data);	//'[["44.054517", "56.366", "1520845490", "Привет QWER"], [ "44.068579", "56.372314", "1520846572", "В132ХА152" ]]');	//data);
+	for (var i=0; i<=plist.length-1; i++) {
+//		alert (plist[i])
+		var YX = plist[i][0];
+		var opts = plist[i][1]
+		if (opts['icon'] && tsIcons.hasOwnProperty(opts['icon'])) {
+			var jIcon = tsIcons[opts['icon']];
+		} else	var jIcon = tsIcons['red'];
+		/*
+		if (tsIcons.hasOwnProperty(plist[i][2]))
+			var jIcon = tsIcons[plist[i][2]];
+		else	var jIcon = tsIcons['red'];
+		*/
+		dict_ts_list[i] = L.marker(YX, {icon: jIcon}).addTo(mymap).bindTooltip(opts['gosnum']).bindPopup(opts['gosnum'] + opts['sp'] +'<br>' +opts['dt'] +'<br>' +opts['bn']);	// +' # '+ i);
+	}
+}
+
+function mmm (txt) {
+	var LeafIcon = L.Icon.extend({options: {iconAnchor: [12,24], popupAnchor: [0, -27], shadowAnchor: [16,37], shadowUrl: '/img/marker-shadow.png', shadowSize: [51, 37]}});
+	var redIcon = new LeafIcon({iconUrl: '/img/circle-red.svg'})
+	var marker = [L.marker([56.3271,44.0074], {icon: redIcon}).addTo(mymap).bindPopup(txt).openPopup(),
+	L.marker([56.31271,44.01074], {icon: redIcon}).addTo(mymap).bindPopup('111 txt').openPopup()];
+	L.marker([56.3271,44.02074], {icon: redIcon}).addTo(mymap).bindPopup('222 txt').openPopup();
+	L.marker([56.33271,44.03074], {icon: redIcon}).addTo(mymap).bindPopup('333 txt');	//.openPopup();
+} 
+function check_bounds () {
+	var bounds = mymap.getBounds();
+	var BBB = 'YX: ' + bounds['_northEast'] +', 00: ' + bounds['_southWest'];
+//	orthEast: LatLng(56.399655, 44.145813)	- Левый верхний
+//	southWest: LatLng(56.247356, 43.836823)	- Првыый нижний
+	alert (BBB);
+}
+///////////////////////////////////////////////////
+/*
 var dict_ts_list = {};
 
 function	out_data (data) {
@@ -98,11 +153,13 @@ function mmm (txt) {
 	L.marker([56.31271,44.01074], {icon: redIcon}).addTo(mymap).bindPopup('111 txt').openPopup()];
 	L.marker([56.3271,44.02074], {icon: redIcon}).addTo(mymap).bindPopup('222 txt').openPopup();
 	L.marker([56.33271,44.03074], {icon: redIcon}).addTo(mymap).bindPopup('333 txt');	//.openPopup();
-} 
+}
+*/ 
 </script>
   </head>
   <body>
 	<form name='myForm' action='http://212.193.103.21/tmp/mmap.html' method='post'><fieldset class='hidd'>
+	<input name='cod_region' type='hidden' value='' />
 	<input name='org_inn' type='hidden' value='0' />
 	<input name='bm_ssys' type='hidden' value='131072' />
 	</fieldset>
@@ -115,6 +172,7 @@ function mmm (txt) {
 	<td><div id='clear_ts' class='asbutton' onclick="clear_ts_list();"> Очистить </div></td>
 	<!--td><div id='test' class='asbutton' onclick="alert('mymap.getZoom: ' +mymap.getZoom());"> &copy; </div></td-->
 	<!--td><div id='test' class='asbutton' onclick="alert('mymap.getZoom: ' +document.myForm.org_inn.value);" > &copy; </div></td-->
+	<td><div id='last_time' class='asbutton'> &nbsp;&nbsp;&nbsp;&nbsp; </div></td>
 	<td><div id='reload' class='asbutton' onclick="document.myForm.submit();" title="Обновить"><img src="../img/reload_w24.png"></div></td>
 	</tr>
 	</table></div>

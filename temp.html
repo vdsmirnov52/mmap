@@ -19,7 +19,7 @@
 	<script type='text/javascript' src='/jq/jquery.onajax_answer.js'></script>
 	<script type='text/javascript' src='/jq/jquery.js'></script>
 
-	<script type='text/javascript' src='/js/view_canvas.js'></script>	// Test 
+	<script type='text/javascript' src='/js/view_canvas.js' TEST></script>
 
 	<link rel='stylesheet' type='text/css' href='/css/mmaps.css' />
 	<link rel='stylesheet' type='text/css' href='/css/style.css' />
@@ -37,10 +37,11 @@ navigator.geolocation.getCurrentPosition (
 
 var timerId = setInterval(set_shadow, 10000, 'view_canvas');
 */
+var	rnic_nn = ' &copy; <a href="http://rnc52.ru/" title="РНИЦ Нижегородской области">RNIC 52</s>';
 	mymap = L.map('map').setView([56.32354, 43.99121], 12);
 var	osmLayer = new L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
 	maxZoom: 18,
-	attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+	attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors |' +rnic_nn
 	}).addTo(mymap);
 
 var	marker = L.marker([56.32354, 43.99121]).addTo(mymap)
@@ -50,7 +51,7 @@ var	marker = L.marker([56.32354, 43.99121]).addTo(mymap)
 var	divmark = L.marker([56.32354, 43.99121], {icon: L.divIcon({ html:'QWERTY Тест', className: 'icon' })}).addTo(mymap);
 
 //	.Title('.Title')
-var	roadsLayer = new L.tileLayer('http://212.193.103.5/{alias}/{z}/{x}/{y}.png', {maxZoom: 18, attribution: '&copy; RNIC', alias: 'enk2'});
+var	roadsLayer = new L.tileLayer('http://212.193.103.5/{alias}/{z}/{x}/{y}.png', {maxZoom: 18, attribution: rnic_nn, alias: 'enk2'});
 var	yndx = new L.Yandex();
 var	ytraffic = new L.Yandex("null", {traffic:true, opacity:0.8, overlay:true});
 
@@ -71,11 +72,20 @@ mymap.on('click', (e) => {
 });
 ///////////////////////////////////////////////////
 
-var dict_ts_list = [];
-var dict_ddddddd = [];
+var dict_ddddddd = [];	// DEBUG
+var dict_ts_list = [];	// Транспорт
+var list_regionn = [];	// районы города
+
+function	clear_map_object (obj) {
+	for (k in obj) {
+		if (obj.hasOwnProperty(k))	obj[k].remove();
+		delete(obj[k])
+	}
+}
 
 function	out_data (data) {
-	clear_ts_list ();
+//	clear_ts_list ();
+	clear_map_object (dict_ts_list);
 	var LeafIcon = L.Icon.extend({options: {iconAnchor: [12,24], popupAnchor: [0, -27]}});	//, shadowAnchor: [16,37], shadowUrl: '/img/marker-shadow.png', shadowSize: [51, 37]}});
 	var tsIcons = {};
 	tsIcons['blue'] = new LeafIcon({iconUrl: '/img/circle-blu.svg'});
@@ -83,10 +93,7 @@ function	out_data (data) {
 	tsIcons['grey'] = new LeafIcon({iconUrl: '/img/circle-gry.svg'});
 	tsIcons['red'] = new LeafIcon({iconUrl: '/img/circle-red.svg'});
 //	alert (data);
-//	44.002833,56.237317,green,<b>52АА3252</b> <span class=bferr>Стоит</span><br><b>Ооо  Эксавтодор </b>,icon,
-//	43.94325,56.23325,green,<b>52АА3253</b> &nbsp; v:5км/ч<br><b>Ооо  Эксавтодор </b>,icon,
 	var plist = eval(data);	//'[["44.054517", "56.366", "1520845490", "Привет QWER"], [ "44.068579", "56.372314", "1520846572", "В132ХА152" ]]');	//data);
-//	alert (plist);
 	for (var i=0; i<=plist.length-1; i++) {
 //		alert (plist[i])
 		var YX = plist[i][0];
@@ -99,17 +106,10 @@ function	out_data (data) {
 			var jIcon = tsIcons[plist[i][2]];
 		else	var jIcon = tsIcons['red'];
 		*/
-		dict_ts_list[i] = L.marker(YX, {icon: jIcon}).addTo(mymap).bindTooltip(opts['gosnum']).bindPopup(opts['gosnum'] +'<br>\\n' +opts['dt'] +'<br>' +opts['sp'] +' # '+ i);
+		dict_ts_list[i] = L.marker(YX, {icon: jIcon}).addTo(mymap).bindTooltip(opts['gosnum']).bindPopup(opts['gosnum'] + opts['sp'] +'<br>' +opts['dt'] +'<br>' +opts['bn'] +' # '+ i);
 	//	dict_ddddddd[i] = L.marker(YX, {icon: L.divIcon({className: 'icon', html: opts['gosnum']})}).addTo(mymap);
 	}
 //	overlays['GosN'] = dict_ddddddd;
-}
-function	clear_ts_list () {
-//	alert('clear_ts_list');
-	for (k in dict_ts_list) {
-		if (dict_ts_list.hasOwnProperty(k))	dict_ts_list[k].remove();
-		delete(dict_ts_list[k])
-	}
 }
 
 function mmm (txt) {
@@ -123,8 +123,6 @@ function mmm (txt) {
 function check_bounds () {
 	var bounds = mymap.getBounds();
 	var BBB = 'YX: ' + bounds['_northEast'] +', 00: ' + bounds['_southWest'];
-//	alert (check_bounds);
-//	alert (bounds.getNorthEast() +' \\n '+ bounds.getSouthWest());
 //	orthEast: LatLng(56.399655, 44.145813)	- Левый верхний
 //	southWest: LatLng(56.247356, 43.836823)	- Првыый нижний
 	alert (BBB);
@@ -133,6 +131,7 @@ function check_bounds () {
   </head>
   <body>
 	<form name='myForm' action='http://212.193.103.21/tmp/temp.html' method='post'><fieldset class='hidd'>
+	<input name='cod_region' type='hidden' value='' />
 	<input name='org_inn' type='hidden' value='0' />
 	</fieldset>
 	<div id='menu' style="min-width: 130px; min-height: 20px; max-width: 1100px;">

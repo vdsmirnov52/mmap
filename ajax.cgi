@@ -40,6 +40,9 @@ def     check ():
 				if ts_list:
 					print "~eval|document.myForm.org_inn.value='0'; out_data('%s');" % json.dumps(ts_list)	#rt.get_ts(request))
 			#	else:	print "~eval|alert('У организации ИНН: %s \\nНет транспортных средств!');" % request.get('org_inn')
+			elif shstat == 'set_region':
+			#	if os.path.split(os.environ['HTTP_REFERER'])[-1] == 'temp.html':
+					rt.set_region(request)
 			elif shstat == 'view_gzones':
 				print '~widget|', rt.view_gzones (request)
 			elif shstat == 'set_organizations':

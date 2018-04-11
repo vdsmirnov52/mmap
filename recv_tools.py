@@ -11,15 +11,8 @@ import  dbtools
 
 
 def	get_ts (request):
-	data = [	# DEBUG
-		[ 44.054517, 56.366000, '11.03.2018 16:22:22', 'В088КР152' ],
-		[ 44.068579, 56.372314, 1520846572, 'В132ХА152' ], [ 44.095624, 56.369604, 1520846556, 'К155РР152' ], [ 44.101358, 56.341312, 1520846576, 'К241НХ152' ],
-		[ 44.054419, 56.359042, 1520846152, 'К243НХ152' ], [ 44.885438, 55.566636, 1519914891, 'К259НХ152' ], [ 44.095282, 56.369533, 1520846564, 'К260НХ152' ],
-		[ 44.114529, 56.341735, 1520846502, 'К289ОХ152' ], [ 44.081979, 56.352356, 1520846557, 'К290ОХ152' ], [ 44.095706, 56.369468, 1518531986, 'К297НХ152' ],
-		[ 44.095849, 56.369503, 1520843830, 'К765КА152' ], [ 44.081248, 56.352368, 1520846469, 'К827СС152' ], [ 44.056917, 56.547167, 1520846580, 'К831СС152' ],
-	]
+	""" Читать транспорт по ИНН	"""
 # CREATE  VIEW vlast_pos AS SELECT p.*, t.idd AS code, t.inn AS tinn, gosnum, marka, t.rem, bname FROM last_pos p INNER JOIN recv_ts t ON p.ida = t.device_id INNER JOIN org_desc o ON t.inn = o.inn;
-#	dbi = dbtools.dbtools('host=212.193.103.20 dbname=wialon port=5432 user=smirnov')
 	dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
 #	res = dbi.get_table('last_pos', 'inn >0 ORDER BY t DESC')
 #	res = dbi.get_table('vlast_pos', 'x >0 ORDER BY t DESC')
@@ -46,11 +39,14 @@ def	get_ts (request):
 		if r[d.index('sp')] and r[d.index('sp')] > 0:
 			gosnum += ' &nbsp; v:%dкм/ч' % r[d.index('sp')]
 		else:	gosnum += ' <span class=bferr>Стоит</span>'
-		if os.path.split(os.environ['HTTP_REFERER'])[-1] == 'temp.html':
-			opts = {'icon': icon, 'gosnum': r[d.index('gosnum')], 'dt': '%s' % time.strftime('%T %d-%m-%Y', time.localtime(r[d.index('t')]))}
+		if res:	# os.path.split(os.environ['HTTP_REFERER'])[-1] == 'temp.html':
+			opts = {'icon': icon, 'gosnum': "<b> %s </b>" % r[d.index('gosnum')], 'dt': '%s' % time.strftime('%T %d-%m-%Y', time.localtime(r[d.index('t')]))}
 			if r[d.index('bname')] and r[d.index('bname')] != '':
-				opts['sp'] = "%s" % r[d.index('bname')].replace('"', " ")
-			ddd.append([[float(r[d.index('y')]), float(r[d.index('x')])], opts])	#icon': icon, 'gosnum': r[d.index('gosnum')], 'dt': '%s' % time.strftime('%T %d-%m-%Y', time.localtime(r[d.index('t')]))}])
+				opts['bn'] = "<span class=bfligt>%s </span><br />" % r[d.index('bname')].replace('"', " ")
+			if r[d.index('sp')] and r[d.index('sp')] > 0:
+				opts['sp'] = ' &nbsp; v:%dкм/ч' % r[d.index('sp')]
+			else:	opts['sp'] = ' &nbsp; <span class=bferr>Стоит</span>'
+			ddd.append([[float(r[d.index('y')]), float(r[d.index('x')])], opts])
 		else:
 			if r[d.index('bname')] and r[d.index('bname')] != '':
 				gosnum += '<br><b>%s</b>' % r[d.index('bname')].replace('"', " ")
@@ -62,23 +58,56 @@ img_close = """<img onclick="$('#widget').html('')" src="../img/delt2.png" >"""	
 def	view_gzones (request):
 	peg_nn = { 1: 'Автозаводский', 2: 'Канавинский', 3: 'Ленинский', 4: 'Московский', 5: 'Нижегородский', 6: 'Приокский', 7: 'Советский', 8: 'Сормовский', 9: 'Северний', }
 
+	cod_region = request.get('cod_region')
 	sout = ["""<div class="wffront" style="width: 510px; ">"""]
-	sout.append ("""<table width="100%%" cellpadding="2" cellspacing="0">
-		<tr class='mark'><td><span class='tit' onclick="$('#widget').html('');">Выбрать район города:</span></td><td align="right">%s</td></tr></table>""" % img_close)
-	sout.append ('<ul>')
-	for jr in peg_nn.keys():
-		sout.append ("""<li class='line' > %s</li>""" % peg_nn[jr])
-	sout.append ('</ul>')
+	sout.append ('<table width="100%%" cellpadding="2" cellspacing="0">')
+	if cod_region and cod_region.isdigit() and int(cod_region) > 0:
+		sout.append("""<tr class='line'><td onclick="document.myForm.cod_region.value=''; $('#widget').html(''); mymap.setView([56.32, 43.95], 11); set_shadow ('set_region');"><span class='tit'>
+			Вернутся в Центр города </span></td><td align="right">%s</td></tr></table>""" % img_close)
+	else:
+		sout.append ("""<tr class='mark'><td><span class='tit' onclick="$('#widget').html('');">Выбрать район города:</span></td><td align="right">%s</td></tr></table>""" % img_close)
+	
+	dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
+	res = dbi.get_table ('mp_region', 'cpoint IS NOT NULL ORDER BY cod')
+	if res:	# os.path.split(os.environ['HTTP_REFERER'])[-1] == 'temp.html':
+		d = res[0]
+		sout.append("""<br /><table width="99%" cellpadding="2" cellspacing="0">""")
+		for r in res[1]:
+			if cod_region and cod_region.isdigit() and int(cod_region) == r[d.index('cod')]:
+				sout.append("""<tr class='mark'><td>&nbsp;&nbsp;&bull; %s</td><td align=right> &nbsp;&nbsp;</td></tr>""" % r[d.index('name')])	#, r[d.index('cpoint')]))
+			else:
+				lll = r[d.index('cpoint')][1:-1].split(',')
+				sout.append("""<tr class='line' onclick="document.myForm.cod_region.value=%d; $('#widget').html('');
+					mymap.setView([%s,%s], 12);
+					set_shadow ('set_region');"><td>&nbsp;&nbsp;&bull; %s</td><td align=right> &nbsp;&nbsp;</td></tr>""" % (
+					r[d.index('cod')], lll[1], lll[0], r[d.index('name')]))	#, r[d.index('cpoint')]))
+		sout.append ('</table><br />')
+		
+	elif res == False:
+		sout.append ('<ul>')
+		for jr in peg_nn.keys():
+			sout.append ("""<li class='line' > %s</li>""" % peg_nn[jr])
+		sout.append ('</ul>')
+	else:
+		sout.append ('<span class="bferr"> нет Зоны обслуживания </span>')
 	sout.append('</div>')
 	return '\n'.join(sout)
 
-orgs_list = {	### DEBUG
-	5263004131: '"Дорожник" г. Нижний Новгород',
-	5259120142: 'ООО «НижДорСервис»',
-	5263133747: 'ООО "ЭксАвтоДор"',
-	5256021545: 'МП РЭД Автозаводского района',
-	1234567890: 'ООО Навигационные технологии',
-	}
+def	set_region(request):
+	print 'set_region', request
+	cod_region = request.get('cod_region')
+	if cod_region and cod_region.isdigit() and int(cod_region) > 0:
+		dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
+		row = dbi.get_row ('SELECT plgn FROM mp_region WHERE cod = %s' % cod_region)
+		print "~log|", type(row[0])
+		plist = []
+		for p in row[0][1:-1].replace('),(', '):(').split(':'):
+			xy = p[1:-1].split(',')
+			plist.append(xy[1] +','+ xy[0])
+		print "~eval|if (! list_regionn.hasOwnProperty(%s)) { list_regionn[%s] = L.polygon([[%s]], {color: 'red'}).addTo(mymap); }" % (cod_region, cod_region, '],['.join(plist))	#, cod_region)
+	else:
+		print "~eval| clear_map_object (list_regionn);"
+
 def	get_olist (bm_ssys = None):
 	dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
 	olist = {}
