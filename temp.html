@@ -69,10 +69,15 @@ mymap.on('click', (e) => {
       ', ' + e.latlng.lng.toFixed(6) + ')');
     mymap.openPopup(popup);
   })
+
+if (window.location.search) {
+//	alert ('QQQ '+ window.location.search);
+	set_shadow('GET&get_'+ window.location.search.replace('?', ''))
+}
 });
 ///////////////////////////////////////////////////
 
-var dict_ddddddd = [];	// DEBUG
+var dict_gosnumber = [];	// DEBUG
 var dict_ts_list = [];	// Транспорт
 var list_regionn = [];	// районы города
 
@@ -86,6 +91,7 @@ function	clear_map_object (obj) {
 function	out_data (data) {
 //	clear_ts_list ();
 	clear_map_object (dict_ts_list);
+	clear_map_object (dict_gosnumber);
 	var LeafIcon = L.Icon.extend({options: {iconAnchor: [12,24], popupAnchor: [0, -27]}});	//, shadowAnchor: [16,37], shadowUrl: '/img/marker-shadow.png', shadowSize: [51, 37]}});
 	var tsIcons = {};
 	tsIcons['blue'] = new LeafIcon({iconUrl: '/img/circle-blu.svg'});
@@ -101,15 +107,27 @@ function	out_data (data) {
 		if (opts['icon'] && tsIcons.hasOwnProperty(opts['icon'])) {
 			var jIcon = tsIcons[opts['icon']];
 		} else	var jIcon = tsIcons['red'];
-		/*
-		if (tsIcons.hasOwnProperty(plist[i][2]))
-			var jIcon = tsIcons[plist[i][2]];
-		else	var jIcon = tsIcons['red'];
-		*/
-		dict_ts_list[i] = L.marker(YX, {icon: jIcon}).addTo(mymap).bindTooltip(opts['gosnum']).bindPopup(opts['gosnum'] + opts['sp'] +'<br>' +opts['dt'] +'<br>' +opts['bn'] +' # '+ i);
-	//	dict_ddddddd[i] = L.marker(YX, {icon: L.divIcon({className: 'icon', html: opts['gosnum']})}).addTo(mymap);
+		if (document.getElementById('view_gosnum'))
+			dict_ts_list[i] = L.marker(YX, {icon: jIcon}).addTo(mymap).bindPopup(opts['gosnum'] + opts['sp'] +'<br>' +opts['bn'] +opts['dt'] +'<br>' +' #zzz '+ i);
+		else	dict_ts_list[i] = L.marker(YX, {icon: jIcon}).addTo(mymap).bindTooltip(opts['gosnum']).bindPopup(opts['gosnum'] + opts['sp'] +'<br>' +opts['dt'] +'<br>' +opts['bn'] +' # '+ i);
+		dict_gosnumber[i] = L.marker(YX, {icon: L.divIcon({className: 'icon', html: opts['gosnum']})});	//.addTo(mymap);
+		if (document.myForm.view_gosnum.value == 'on')	dict_gosnumber[i].addTo(mymap);
 	}
-//	overlays['GosN'] = dict_ddddddd;
+//	overlays['GosN'] = dict_gosnumber;
+}
+function view_gosnumber(j) {
+	var ln = 0;
+	for (k in dict_gosnumber) {
+		ln++;
+		if (j == 2)
+			dict_gosnumber[k].remove();
+		else	dict_gosnumber[k].addTo(mymap);
+	}
+	if (ln >0) {
+		if (j == 2)
+			document.myForm.view_gosnum.value='off';
+		else	document.myForm.view_gosnum.value='on';
+	}
 }
 
 function mmm (txt) {
@@ -128,9 +146,10 @@ function check_bounds () {
 	alert (BBB);
 }
 </script>
-  </head>
-  <body>
+</head>
+<body>
 	<form name='myForm' action='http://212.193.103.21/tmp/temp.html' method='post'><fieldset class='hidd'>
+	<input id='view_gosnum' name='view_gosnum' type='hidden' value='off' />
 	<input name='cod_region' type='hidden' value='' />
 	<input name='org_inn' type='hidden' value='0' />
 	</fieldset>
@@ -149,8 +168,12 @@ function check_bounds () {
 	</table></div>
 
 	<table><tr style='vertical-align: top'><td>
-    <div id="map" style="width: 900px; height: 800px; border: thin solid #668;"></div>
+	<div id="map" style="width: 900px; height: 800px; border: thin solid #668;"></div>
 	</td><td>
+	<table style='position: absolute; top:64px; left: 100px; z-index: 1111;'><tr>
+	<td><span class='line' style='opacity: 0.8; color: #eef; background-color: #b96; padding: 4px;' onclick="set_shadow ('view_gosnum');"> GosNum </span></td>
+	<td><input id='sss' type='button' value='getBounds' onclick="check_bounds();" /></td>
+	</tr></table>
 	<input id='sss' type='button' value='getBounds' onclick="check_bounds();" />
 	<input id='sss' type='button' value='canvas' onclick="view_canvas();" />
 	<input id='sss' type='button' value='Get TS' onclick="set_shadow ('update_ts_list');" />

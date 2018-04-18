@@ -48,9 +48,23 @@ def	get_transports(orgrow):
 				r[d.index('device_id')], r[d.index('device_id')], orgrow['inn'], r[d.index('gosnum')], r[d.index('marka')], r[d.index('device_id')], orgrow['bname'])
 			print query	#, DBR.qexecute(query)
 
-def	get_organizations (bm_ssys):
-	""" Поиск организаций принадлежащих подсистеме bm_ssys	"""
-	res = DBC.get_table('organizations', 'bm_ssys & %s = %s' % (bm_ssys, bm_ssys), cols='id_org, inn, bname')
+def	get_organizations (bm_ssys = None, inn = None):
+	""" Поиск организаций принадлежащих подсистеме bm_ssys или по ИНН	"""
+	print 'Поиск организаций (bm_ssys = %s, inn = %s)' % (bm_ssys, inn)
+	swhere = None
+	if bm_ssys:	swhere = 'bm_ssys & %s = %s' % (bm_ssys, bm_ssys)
+	if inn:
+		if swhere:
+			swhere += ' AND inn = %s' % inn
+		else:	swhere = 'inn = %s' % inn
+	if not swhere:	return
+
+	res = DBC.get_table('organizations', swhere, cols='id_org, inn, bname')
+	'''
+#	res = DBC.get_table('organizations', 'bm_ssys & %s = %s' % (bm_ssys, bm_ssys), cols='id_org, inn, bname')
+	for k in res[0]:	print '\t', k, '=\t', res[1][0][res[0].index(k)],
+	return
+	'''
 	if not res:	return
 	d = res[0]
 	count_ts = 0
@@ -89,6 +103,8 @@ def	outhelp():
 	print """\n Утилита для работы с БД
 	-t	Контроль соединений с БД
 	-d	Отладка (DEBUG = True)
+	-s MSS	Поиск по bm_ssys. Ищем организации принадлежащин подсистеме и их транспортные средства.
+	-o INN	Поиск по ИНН. Ищем организацию и ее транспортные средства.
 	-h	Справка
 	"""
 	sys.exit()
@@ -98,13 +114,15 @@ DBR =	None
 DEBUG =	False
 if __name__ == "__main__":
 	org_inn = None
+	bm_ssys = None
 	comands = None
 	try:
-		optlist, args = getopt.getopt(sys.argv[1:], 'htdo:c:')
+		optlist, args = getopt.getopt(sys.argv[1:], 'htdo:s:c:')
 		for o in optlist:
 			if o[0] == '-h':	outhelp()
 			if o[0] == '-t':	tests()
 			if o[0] == '-d':	DEBUG = True
+			if o[0] == '-s':	bm_ssys = o[1]
 			if o[0] == '-o':	org_inn = o[1]
 			if o[0] == '-c':	comands = o[1]
 		if not (org_inn or comands):
@@ -115,7 +133,8 @@ if __name__ == "__main__":
 		DBR = dbtools.dbtools(DBASES['receiver'])
 
 	#	get_transports (get_org (5262021430))
-		get_organizations (131072)
+	#	get_organizations (131072)
+		get_organizations (bm_ssys, org_inn)
 		get_org ()
 	except SystemExit:	pass
 	except:

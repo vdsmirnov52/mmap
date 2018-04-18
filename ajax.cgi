@@ -29,6 +29,21 @@ def     check ():
 			print time.strftime("~last_time|%T", time.localtime(time.time()))
 			print '~warnn|'	#, request, shstat
 
+			if shstat == 'GET':
+				org_inn = request.get('get_inn').strip()
+				print org_inn, 'org_inn[%s]' % org_inn
+				if org_inn and org_inn.isdigit():
+					#	print "~eval|alert('org_inn [%s]');" % org_inn
+						print "~eval|document.myForm.org_inn.value=%s; $('#widget').html(''); set_shadow ('get_tansport');" % org_inn
+				'''
+				for k in request.keys():
+					if 'get_inn' == k:
+						request['org_inn'] = request['get_inn']
+						shstat = 'view_canvas'
+						request['shstat'] = shstat
+				#		print request, request['GET']
+				'''
+				sys.exit()
 			if shstat == 'get_tansport':
 				ts_list = rt.get_ts(request)
 				if ts_list:
@@ -38,11 +53,17 @@ def     check ():
 				print time.strftime("%T %d-%m-%Y", time.localtime(time.time()))
 				ts_list = rt.get_ts(request)
 				if ts_list:
-					print "~eval|document.myForm.org_inn.value='0'; out_data('%s');" % json.dumps(ts_list)	#rt.get_ts(request))
+					print "~eval|document.myForm.org_inn.value='%s'; out_data('%s');" % (json.dumps(ts_list), rt.get_ts(request))
 			#	else:	print "~eval|alert('У организации ИНН: %s \\nНет транспортных средств!');" % request.get('org_inn')
 			elif shstat == 'set_region':
-			#	if os.path.split(os.environ['HTTP_REFERER'])[-1] == 'temp.html':
 					rt.set_region(request)
+			elif shstat == 'view_gosnum':
+		#		print request
+		#		if os.path.split(os.environ['HTTP_REFERER'])[-1] == 'temp.html':
+					isview = request.get('view_gosnum')
+					if not isview or isview != 'on':
+						print "~eval|view_gosnumber(1);"
+					else:	print "~eval|view_gosnumber(2);"
 			elif shstat == 'view_gzones':
 				print '~widget|', rt.view_gzones (request)
 			elif shstat == 'set_organizations':

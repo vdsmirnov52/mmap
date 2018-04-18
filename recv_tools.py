@@ -23,6 +23,7 @@ def	get_ts (request):
 	else:	res = dbi.get_table('vlast_pos', 'tinn >0 ORDER BY t DESC')
 	if not res:	return	# data
 	d = res[0]
+	print 'org_inn', org_inn, len(res[1])
 	ddd = []
 	gosnum = '??? '
 	jtm = int(time.time())
@@ -111,8 +112,10 @@ def	set_region(request):
 def	get_olist (bm_ssys = None):
 	dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
 	olist = {}
+	if not bm_ssys:	bm_ssys = 131072
 #	res = dbi.get_table ('org_desc', 'inn > 0 ORDER BY bname')
-	res = dbi.get_table ('org_desc', 'inn > 0 AND stat & 1 = 1 ORDER BY bname')
+#	res = dbi.get_table ('org_desc', 'inn > 0 AND stat & 1 = 1 ORDER BY bname')
+	res = dbi.get_table ('org_desc', 'inn > 0 AND stat & 1 = 1 AND bm_ssys & %s = %s ORDER BY bname' % (bm_ssys, bm_ssys))
 	if res:
 		d = res[0]
 		for r in res[1]:	olist[r[d.index('inn')]] = (r[d.index('bname')], r[d.index('count_ts')])
@@ -121,7 +124,8 @@ def	get_olist (bm_ssys = None):
 def	set_organizations (request):
 	sout = ["""<div class="wffront" style="width: 510px; ">"""]
 	
-	orgs_list = get_olist ()
+	bm_ssys = request.get('bm_ssys')
+	orgs_list = get_olist (bm_ssys)
 	org_inn = request.get('org_inn')
 	if org_inn and org_inn.isdigit() and int(org_inn) > 0:
 		int_inn = int(org_inn)
@@ -170,8 +174,8 @@ def	get_tsbyorg (id_org, inn):
 	
 def	update_ts_list (request):
 
-	referer = os.environ['HTTP_REFERER']
-	print referer, os.path.split(referer), '<hr>'
+	referer = os.environ.get('HTTP_REFERER')
+	if referer:	print referer, os.path.split(referer), '<hr>'
 	dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
 	res = dbi.get_table ('org_desc')
 	if not res:
@@ -179,20 +183,23 @@ def	update_ts_list (request):
 		return
 	d = res[0]
 	for r in res[1]:
-		for k in d:
-			print r[d.index(k)],
-		print '<br>'
+	#	for k in d:	print r[d.index(k)],
+	#	print '<br>'
 		tsbyorg = get_tsbyorg (r[d.index('id_org')], r[d.index('inn')])
 		if not tsbyorg:	continue
 		for gn in tsbyorg.keys():
 			if dbi.get_row ("SELECT * FROM recv_ts WHERE gosnum = '%s'" % gn):
 				query = "UPDATE recv_ts SET device_id = %d, inn = %d, rem = '%s', marka = '%s' WHERE gosnum = '%s'" % (tsbyorg[gn][0], r[d.index('inn')], r[d.index('bname')], tsbyorg[gn][1], gn)
-			else:	query = "INSERT INTO recv_ts (idd, device_id, inn, rem, gosnum) VALUES ('idd%d', %d, %d, '%s', '%s')" % (tsbyorg[gn], tsbyorg[gn], r[d.index('inn')], r[d.index('bname')], gn)
+			else:
+				query = "INSERT INTO recv_ts (idd, device_id, inn, rem, gosnum) VALUES ('idd%d', %d, %d, '%s', '%s')" % (tsbyorg[gn][0], tsbyorg[gn][0], r[d.index('inn')], r[d.index('bname')], gn)
+			'''
+				print query, '<br>'
+			'''
 			if not dbi.qexecute(query):
 				print query, '<br>'
 				return
 
 if __name__ == "__main__":
 	request = {'this': 'ajax', 'org_inn': '0', 'shstat': 'update_ts_list', 'leaflet-base-layers': 'on'} 
-#	print update_ts_list (request)
+	print update_ts_list (request)
 	print get_olist()
