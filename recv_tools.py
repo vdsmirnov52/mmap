@@ -18,12 +18,16 @@ def	get_ts (request):
 #	res = dbi.get_table('vlast_pos', 'x >0 ORDER BY t DESC')
 
 	org_inn = request.get('org_inn')
+	bm_ssys = request.get('bm_ssys')
+	
 	if org_inn and org_inn.isdigit() and int(org_inn) > 0:
 		res = dbi.get_table('vlast_pos', 'tinn = %s ORDER BY t DESC' % org_inn)
+	elif bm_ssys and bm_ssys.isdigit():
+		res = dbi.get_table('vlast_pos', 'tinn IN (SELECT inn FROM org_desc WHERE bm_ssys & %s = %s) ORDER BY t DESC' % (bm_ssys, bm_ssys))
 	else:	res = dbi.get_table('vlast_pos', 'tinn >0 ORDER BY t DESC')
 	if not res:	return	# data
 	d = res[0]
-	print 'org_inn', org_inn, len(res[1])
+	print 'org_inn', org_inn, len(res[1]), 'org_inn:', org_inn, 'bm_ssys:', bm_ssys
 	ddd = []
 	gosnum = '??? '
 	jtm = int(time.time())
@@ -41,7 +45,8 @@ def	get_ts (request):
 			gosnum += ' &nbsp; v:%dкм/ч' % r[d.index('sp')]
 		else:	gosnum += ' <span class=bferr>Стоит</span>'
 		if res:	# os.path.split(os.environ['HTTP_REFERER'])[-1] == 'temp.html':
-			opts = {'icon': icon, 'gosnum': "<b> %s </b>" % r[d.index('gosnum')], 'dt': '%s' % time.strftime('%T %d-%m-%Y', time.localtime(r[d.index('t')]))}
+		#	opts = {'icon': icon, 'gosnum': "<b> %s </b>" % r[d.index('gosnum')], 'dt': '%s' % time.strftime('%T %d-%m-%Y', time.localtime(r[d.index('t')]))}
+			opts = {'icon': icon, 'gosnum': "<b> %s </b>" % r[d.index('gosnum')], 'dt': '%s' % str_time (r[d.index('t')], jtm).replace("'", '')}
 			if r[d.index('bname')] and r[d.index('bname')] != '':
 				opts['bn'] = "<span class=bfligt>%s </span><br />" % r[d.index('bname')].replace('"', " ")
 			if r[d.index('sp')] and r[d.index('sp')] > 0:
@@ -52,7 +57,8 @@ def	get_ts (request):
 			if r[d.index('bname')] and r[d.index('bname')] != '':
 				gosnum += '<br><b>%s</b>' % r[d.index('bname')].replace('"', " ")
 			if r[d.index('marka')]:	gosnum += '<br>' +r[d.index('marka')]
-			ddd.append([float(r[d.index('x')]), float(r[d.index('y')]), '%s' % time.strftime('%T %d-%m-%Y', time.localtime(r[d.index('t')])), gosnum, icon])
+		#	ddd.append([float(r[d.index('x')]), float(r[d.index('y')]), '%s' % time.strftime('%T %d-%m-%Y', time.localtime(r[d.index('t')])), gosnum, icon])
+			ddd.append([float(r[d.index('x')]), float(r[d.index('y')]), '%s' % str_time (r[d.index('t')], jtm).replace("'", ''), gosnum, icon])
 	return	ddd
 
 img_close = """<img onclick="$('#widget').html('')" src="../img/delt2.png" >"""	#<img src="../img/delt2.png" ><img src="../img/delt2.png" >"""
@@ -94,6 +100,66 @@ def	view_gzones (request):
 	sout.append('</div>')
 	return '\n'.join(sout)
 
+def	str_time (tm, cerrtm = None):
+	if not cerrtm:	cerrtm = int(time.time())
+	dtm = cerrtm - tm
+	if dtm < 60:	return	"<span class='finf sz12'> &nbsp; <b>%s</b> сек назад</span>" % dtm
+	if dtm < 3600:	return	"<span class='fgrey sz12'> &nbsp; <b>%s</b> мин назад</span>" % int(dtm/60)
+	if dtm < 36000:	return	time.strftime("<span class='fligt sz12'> &nbsp; в %T </span>", time.localtime (tm))
+	return	time.strftime("<span class='ferr sz12'> &nbsp; от %T %d.%m.%Y</span>", time.localtime (tm))
+	
+def	str_speed (sp):
+	if sp:	return	" &nbsp; <span class='fligt sz12'> v:<b>%s</b>км/ч" % sp
+	return 	" &nbsp; <span class='bferr sz12'>Стоит</span>"
+
+def	view_ts_list (request):
+	print '~log|view_ts_list <br>'
+	sout = ["""<div class="wffront" style="width: 510px; ">""",
+		"""<table width="100%%" cellpadding="2" cellspacing="0"><tr class='mark'><td><span class='tit'> Список транспорта </span></td><td align="right">%s</td></tr></table>""" % img_close]
+	sinn = request.get('org_inn')
+	if sinn and sinn.isdigit():
+		intm = int(time.time())
+		dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
+	#	SELECT a.*, x, y, t, sp FROM recv_ts a LEFT JOIN vlast_pos AS p ON a.device_id = p.ida WHERE a.inn=
+	#	res = dbi.get_table ('recv_ts a LEFT JOIN vlast_pos AS p ON a.device_id = p.ida', 'a.inn = %s ORDER BY gosnum' % sinn, cols='a.id_ts, a.gosnum, x, y, t')
+		res = dbi.get_table ('recv_ts a JOIN vlast_pos AS p ON a.device_id = p.ida', 'a.inn = %s ORDER BY gosnum' % sinn, cols='a.id_ts, a.gosnum, x, y, t, sp')
+		if res:
+			d = res[0]
+			sout.append(str(d))
+			sout.append('<table>')
+			for r in res[1]:
+				jtm = r[d.index('t')]
+				if jtm:
+					stm = str_time(jtm, intm)
+					gosnum = "<span class='bfinf'> %s </span>" % r[d.index('gosnum')]
+					trclass = """class='line' onclick="$('#widget').html(''); mymap.setView([%s,%s]); set_shadow('get_tansport');" """ % (r[d.index('y')], r[d.index('x')])
+				else:
+					stm = ''
+					gosnum = "<span class='bferr'> %s </span>" % r[d.index('gosnum')]
+					trclass = ""
+				tr = """<tr %s><td> %s </td><td> %s </td><td> %s </td></tr>""" % (
+						trclass, gosnum, str_speed(r[d.index('sp')]), stm)
+				sout.append(tr)
+			sout.append('</table>')
+	else:	sout.append (str(request))
+	sout.append('</div>')
+	return '\n'.join(sout)
+
+def	set_place(inn):
+	dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
+	dorg = dbi.get_dict ('SELECT * FROM org_desc WHERE inn = %s' % inn)
+	if dorg['place']:
+		print ""
+		if dorg['zoom']:
+			zoom = dorg['zoom']
+		else:	zoom = 11
+		x,y = str(dorg['place'])[1:-1].split(',')
+		print "~eval|mymap.setView([%s,%s], %s);" % (y, x, zoom)
+		print "~eval|L.marker([%s,%s]).bindPopup('%s').addTo(mymap).openPopup()" % (y, x, dorg['bname'])
+		if dorg['bm_ssys'] == 2:	# Пассажирские перевозки
+			print """~eval|$('#head_AA').html('<div class=asbutton> %s </div>')""" % dorg['bname']
+			print """~eval|$('#head_BB').html('<div class=asbutton onclick="list_ts();"> Список трансрорта </div>')"""
+
 def	set_region(request):
 	print 'set_region', request
 	cod_region = request.get('cod_region')
@@ -122,7 +188,7 @@ def	get_olist (bm_ssys = None):
 	return	olist
 
 def	set_organizations (request):
-	sout = ["""<div class="wffront" style="width: 510px; ">"""]
+	sout = ["""<div class="wffront" style="width: 550px; ">"""]
 	
 	bm_ssys = request.get('bm_ssys')
 	orgs_list = get_olist (bm_ssys)

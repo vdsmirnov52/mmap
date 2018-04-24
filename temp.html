@@ -50,11 +50,11 @@ var	marker = L.marker([56.32354, 43.99121]).addTo(mymap)
 
 var	divmark = L.marker([56.32354, 43.99121], {icon: L.divIcon({ html:'QWERTY Тест', className: 'icon' })}).addTo(mymap);
 
-//	.Title('.Title')
+	// Дороги Нижнего Новгорода
 var	roadsLayer = new L.tileLayer('http://212.193.103.5/{alias}/{z}/{x}/{y}.png', {maxZoom: 18, attribution: rnic_nn, alias: 'enk2'});
+
 var	yndx = new L.Yandex();
 var	ytraffic = new L.Yandex("null", {traffic:true, opacity:0.8, overlay:true});
-
 var	baseMaps = { "OpenStreetMap": osmLayer, 'Дороги Нижнего Новгорода': roadsLayer, 'L.Yandex': yndx },
 	overlays = { "Marker": marker, "divmark": divmark};
 
@@ -145,6 +145,7 @@ function check_bounds () {
 //	southWest: LatLng(56.247356, 43.836823)	- Првыый нижний
 	alert (BBB);
 }
+function	list_ts () {	set_shadow('view_ts_list')	}
 </script>
 </head>
 <body>
@@ -156,10 +157,10 @@ function check_bounds () {
 	<div id='menu' style="min-width: 130px; min-height: 20px; max-width: 1100px;">
 	<table width=100%>
 	<tr>
-	<td><div id='view_gz' class='asbutton' onclick="set_shadow ('view_gzones');"> Зоны обслуживания </div></td>
-	<td><div id='set_org' class='asbutton' onclick="set_shadow ('set_organizations');"> Выбор организации </div></td>
-	<td><div id='load_ts' class='asbutton' onclick="set_shadow ('get_tansport');"> Обновить ТС </div></td>
-	<td><div id='clear_ts' class='asbutton' onclick="clear_ts_list();"> Очистить </div></td>
+	<td id='head_AA'><div id='view_gz' class='asbutton' onclick="set_shadow ('view_gzones');"> Зоны обслуживания </div></td>
+	<td id='head_BB'><div id='set_org' class='asbutton' onclick="set_shadow ('set_organizations');"> Выбор организации </div></td>
+	<td id='head_CC'><div id='load_ts' class='asbutton' onclick="set_shadow ('get_tansport');"> Обновить ТС </div></td>
+	<td id='head_DD'><div id='clear_ts' class='asbutton' onclick="clear_ts_list();"> Очистить </div></td>
 	<!--td><div id='test' class='asbutton' onclick="alert('mymap.getZoom: ' +mymap.getZoom());"> &copy; </div></td-->
 	<!--td><div id='test' class='asbutton' onclick="alert('mymap.getZoom: ' +document.myForm.org_inn.value);" > &copy; </div></td-->
 	<td><div id='last_time' class='asbutton'> &nbsp;&nbsp;&nbsp;&nbsp; </div></td>

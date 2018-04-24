@@ -30,19 +30,12 @@ def     check ():
 			print '~warnn|'	#, request, shstat
 
 			if shstat == 'GET':
-				org_inn = request.get('get_inn').strip()
-				print org_inn, 'org_inn[%s]' % org_inn
-				if org_inn and org_inn.isdigit():
-					#	print "~eval|alert('org_inn [%s]');" % org_inn
-						print "~eval|document.myForm.org_inn.value=%s; $('#widget').html(''); set_shadow ('get_tansport');" % org_inn
-				'''
-				for k in request.keys():
-					if 'get_inn' == k:
-						request['org_inn'] = request['get_inn']
-						shstat = 'view_canvas'
-						request['shstat'] = shstat
-				#		print request, request['GET']
-				'''
+				get_inn = request.get('get_inn').strip()
+				print 'get_inn[%s]' % get_inn
+				if get_inn and get_inn.isdigit():
+						rt.set_place(get_inn)
+					#	print '~eval|mymap.setView([55.521219,45.496273], 10);'
+						print "~eval|document.myForm.org_inn.value=%s; $('#widget').html(''); set_shadow ('get_tansport');" % get_inn
 				sys.exit()
 			if shstat == 'get_tansport':
 				ts_list = rt.get_ts(request)
@@ -56,7 +49,10 @@ def     check ():
 					print "~eval|document.myForm.org_inn.value='%s'; out_data('%s');" % (json.dumps(ts_list), rt.get_ts(request))
 			#	else:	print "~eval|alert('У организации ИНН: %s \\nНет транспортных средств!');" % request.get('org_inn')
 			elif shstat == 'set_region':
-					rt.set_region(request)
+				rt.set_region(request)
+			elif shstat == 'view_ts_list':
+				ress = rt.view_ts_list(request)
+				print '~widget|', ress
 			elif shstat == 'view_gosnum':
 		#		print request
 		#		if os.path.split(os.environ['HTTP_REFERER'])[-1] == 'temp.html':
@@ -65,12 +61,13 @@ def     check ():
 						print "~eval|view_gosnumber(1);"
 					else:	print "~eval|view_gosnumber(2);"
 			elif shstat == 'view_gzones':
-				print '~widget|', rt.view_gzones (request)
+				ress = rt.view_gzones (request)
+				print '~widget|', ress
 			elif shstat == 'set_organizations':
-				print '~widget|', rt.set_organizations (request)
-			elif shstat == 'update_ts_list':
+				ress = rt.set_organizations (request)
+				print '~widget|', ress
+			elif shstat == 'update_ts_list':	# temp.html Get TS Обновление списка ТС
 				print '~log|'	#, request
-			#	import	recv_tools as rt
 				rt.update_ts_list (request)
 			else:
 				print 'shstat:', shstat, request
@@ -93,14 +90,14 @@ def     check ():
 			conf = cglob.get_config(CONF_PATHNAME)
 			main_page.new_widow  (request, conf)
 			sys.exit()
-#		else:
-	#	print """Content-Type: text/html; charset=utf-8\n\n<!DOCTYPE HTML>"""
-		print """Content-Type: text/html; charset=utf-8\n%s\n\n<!DOCTYPE HTML>""" % CPYSESSID
-		print '<html>'
-		conf = cglob.get_config(CONF_PATHNAME)
-		main_page.main(request, conf)
-	#	print "CPYSESSID:", CPYSESSID
-	#	cglob.ppobj(dict(os.environ))
+		else:
+		#	print """Content-Type: text/html; charset=utf-8\n\n<!DOCTYPE HTML>"""
+			print """Content-Type: text/html; charset=utf-8\n%s\n\n<!DOCTYPE HTML>""" % CPYSESSID
+			print '<html>', CPYSESSID, '</html>'
+		#	conf = cglob.get_config(CONF_PATHNAME)
+		#	main_page.main(request, conf)
+		#	print "CPYSESSID:", CPYSESSID
+		#	cglob.ppobj(dict(os.environ))
 	except SystemExit:	pass
 	except:
 		exc_type, exc_value = sys.exc_info()[:2]
