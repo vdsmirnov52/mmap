@@ -27,26 +27,32 @@ def     check ():
 			shstat = request.get('shstat')
 			import	recv_tools as rt
 			print time.strftime("~last_time|%T", time.localtime(time.time()))
-			print '~warnn|'	#, request, shstat
 
+	#		if 'temp.html' in referer:	print "~eval| msg('shstat: %s')" % shstat
 			if shstat == 'GET':
+		#		print "~eval| msg('GET')"
 				get_inn = request.get('get_inn').strip()
-				print 'get_inn[%s]' % get_inn
 				if get_inn and get_inn.isdigit():
 						rt.set_place(get_inn)
-					#	print '~eval|mymap.setView([55.521219,45.496273], 10);'
 						print "~eval|document.myForm.org_inn.value=%s; $('#widget').html(''); set_shadow ('get_tansport');" % get_inn
 				sys.exit()
+
+			if shstat == 'submit':
+				if '?' in referer:
+					print "~eval|window.location.reload(true);"	# //window.open('%s')" % (referer, referer)
+				else:	print "~eval|window.location.reload(false);"
+			#	print referer
+				sys.exit()
+
 			if shstat == 'get_tansport':
 				ts_list = rt.get_ts(request)
 				if ts_list:
-					print "~eval|out_data('%s');" % json.dumps(ts_list)	#rt.get_ts(request))
-				else:	print "~eval|document.myForm.org_inn.value='0'; alert('У организации ИНН: %s \\nНет АКТИВНЫХ транспортных средств!');" % request.get('org_inn')
+					print "~eval|out_data('%s');" % json.dumps(ts_list)
+				else:	print "~eval|document.myForm.org_inn.value=0; alert('У организации ИНН: %s \\nНет АКТИВНЫХ транспортных средств!');" % request.get('org_inn')
 			elif shstat == 'view_canvas':
-				print time.strftime("%T %d-%m-%Y", time.localtime(time.time()))
 				ts_list = rt.get_ts(request)
 				if ts_list:
-					print "~eval|document.myForm.org_inn.value='%s'; out_data('%s');" % (json.dumps(ts_list), rt.get_ts(request))
+					print "~eval|out_data('%s');" % json.dumps(ts_list)
 			#	else:	print "~eval|alert('У организации ИНН: %s \\nНет транспортных средств!');" % request.get('org_inn')
 			elif shstat == 'set_region':
 				rt.set_region(request)
@@ -84,6 +90,8 @@ def     check ():
 			else:	pass
 			'''
 			sys.exit()
+		else:	print '\n\n', request, os.environ['REQUEST_METHOD']
+		'''
 		elif request.has_key('this') and request['this'] == 'new_widow':
 			print """Content-Type: text/html; charset=utf-8\n\n<!DOCTYPE HTML>\n<html>"""
 	#		cglob.ppobj(dict(os.environ))
@@ -93,11 +101,15 @@ def     check ():
 		else:
 		#	print """Content-Type: text/html; charset=utf-8\n\n<!DOCTYPE HTML>"""
 			print """Content-Type: text/html; charset=utf-8\n%s\n\n<!DOCTYPE HTML>""" % CPYSESSID
-			print '<html>', CPYSESSID, '</html>'
+			print '<html><pre>'
+			print 'CPYSESSID', CPYSESSID
+			for k in os.environ.keys():	print k, '=\t', os.environ
+			print '<pre></html>'
 		#	conf = cglob.get_config(CONF_PATHNAME)
 		#	main_page.main(request, conf)
 		#	print "CPYSESSID:", CPYSESSID
 		#	cglob.ppobj(dict(os.environ))
+		'''
 	except SystemExit:	pass
 	except:
 		exc_type, exc_value = sys.exc_info()[:2]

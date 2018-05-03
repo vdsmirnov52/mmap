@@ -12,10 +12,8 @@ import  dbtools
 
 def	get_ts (request):
 	""" Читать транспорт по ИНН	"""
-# CREATE  VIEW vlast_pos AS SELECT p.*, t.idd AS code, t.inn AS tinn, gosnum, marka, t.rem, bname FROM last_pos p INNER JOIN recv_ts t ON p.ida = t.device_id INNER JOIN org_desc o ON t.inn = o.inn;
+	# CREATE  VIEW vlast_pos AS SELECT p.*, t.idd AS code, t.inn AS tinn, gosnum, marka, t.rem, bname FROM last_pos p INNER JOIN recv_ts t ON p.ida = t.device_id INNER JOIN org_desc o ON t.inn = o.inn;
 	dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
-#	res = dbi.get_table('last_pos', 'inn >0 ORDER BY t DESC')
-#	res = dbi.get_table('vlast_pos', 'x >0 ORDER BY t DESC')
 
 	org_inn = request.get('org_inn')
 	bm_ssys = request.get('bm_ssys')
@@ -27,7 +25,7 @@ def	get_ts (request):
 	else:	res = dbi.get_table('vlast_pos', 'tinn >0 ORDER BY t DESC')
 	if not res:	return	# data
 	d = res[0]
-	print 'org_inn', org_inn, len(res[1]), 'org_inn:', org_inn, 'bm_ssys:', bm_ssys
+#	print 'org_inn', org_inn, len(res[1]), 'bm_ssys:', bm_ssys
 	ddd = []
 	gosnum = '??? '
 	jtm = int(time.time())
@@ -61,34 +59,41 @@ def	get_ts (request):
 			ddd.append([float(r[d.index('x')]), float(r[d.index('y')]), '%s' % str_time (r[d.index('t')], jtm).replace("'", ''), gosnum, icon])
 	return	ddd
 
-img_close = """<img onclick="$('#widget').html('')" src="../img/delt2.png" >"""	#<img src="../img/delt2.png" ><img src="../img/delt2.png" >"""
+#img_close = """<img onclick="$('#widget').html('')" src="../img/delt2.png" >"""	#<img src="../img/delt2.png" ><img src="../img/delt2.png" >"""
+#img_close = """<i class="fa fa-refresh" aria-hidden="true" onclick="$('#widget').html('')"></i>"""
+#img_close = """<i class="fa fa-window-close" aria-hidden="true" onclick="$('#widget').html('')"></i>&nbsp;"""
+img_close = """<i class="fa fa-times" aria-hidden="true" onclick="$('#widget').html('')"></i>&nbsp;"""
+
 def	view_gzones (request):
 	peg_nn = { 1: 'Автозаводский', 2: 'Канавинский', 3: 'Ленинский', 4: 'Московский', 5: 'Нижегородский', 6: 'Приокский', 7: 'Советский', 8: 'Сормовский', 9: 'Северний', }
 
 	cod_region = request.get('cod_region')
-	sout = ["""<div class="wffront" style="width: 510px; ">"""]
-	sout.append ('<table width="100%%" cellpadding="2" cellspacing="0">')
+	sout = ["""<div class="wffront" style="width: 510px; max-width: 90% ">"""]
+	sout.append ('')
 	if cod_region and cod_region.isdigit() and int(cod_region) > 0:
-		sout.append("""<tr class='line'><td onclick="document.myForm.cod_region.value=''; $('#widget').html(''); mymap.setView([56.32, 43.95], 11); set_shadow ('set_region');"><span class='tit'>
-			Вернутся в Центр города </span></td><td align="right">%s</td></tr></table>""" % img_close)
+		sout.append("""<div class='list-group-item list-group-item-action'><span onclick="document.myForm.cod_region.value=''; $('#widget').html(''); mymap.setView([56.32, 43.95], 11); set_shadow ('set_region');">
+								<span class="tit">Вернутся в Центр города </span>
+							</span>
+							<span class="float-right">%s</span>
+						</div>""" % img_close)
 	else:
-		sout.append ("""<tr class='mark'><td><span class='tit' onclick="$('#widget').html('');">Выбрать район города:</span></td><td align="right">%s</td></tr></table>""" % img_close)
+		sout.append ("""<div class='list-group-item list-group-item-action active'><span class='tit' onclick="$('#widget').html('');">&nbsp;Выбрать район города:</span><span class="float-right">%s</span></div>""" % img_close)
 	
 	dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
 	res = dbi.get_table ('mp_region', 'cpoint IS NOT NULL ORDER BY cod')
 	if res:	# os.path.split(os.environ['HTTP_REFERER'])[-1] == 'temp.html':
 		d = res[0]
-		sout.append("""<br /><table width="99%" cellpadding="2" cellspacing="0">""")
+		sout.append("""<ul class="list-group">""")
 		for r in res[1]:
 			if cod_region and cod_region.isdigit() and int(cod_region) == r[d.index('cod')]:
-				sout.append("""<tr class='mark'><td>&nbsp;&nbsp;&bull; %s</td><td align=right> &nbsp;&nbsp;</td></tr>""" % r[d.index('name')])	#, r[d.index('cpoint')]))
+				sout.append("""<li class='list-group-item list-group-item-action active'>%s</li>""" % r[d.index('name')])	#, r[d.index('cpoint')]))
 			else:
 				lll = r[d.index('cpoint')][1:-1].split(',')
-				sout.append("""<tr class='line' onclick="document.myForm.cod_region.value=%d; $('#widget').html('');
+				sout.append("""<li class='line list-group-item list-group-item-action' onclick="document.myForm.cod_region.value=%d; $('#widget').html('');
 					mymap.setView([%s,%s], 12);
-					set_shadow ('set_region');"><td>&nbsp;&nbsp;&bull; %s</td><td align=right> &nbsp;&nbsp;</td></tr>""" % (
+					set_shadow ('set_region');"><span>%s</span></li>""" % (
 					r[d.index('cod')], lll[1], lll[0], r[d.index('name')]))	#, r[d.index('cpoint')]))
-		sout.append ('</table><br />')
+		sout.append ('</div>')
 		
 	elif res == False:
 		sout.append ('<ul>')
@@ -115,7 +120,7 @@ def	str_speed (sp):
 def	view_ts_list (request):
 	print '~log|view_ts_list <br>'
 	sout = ["""<div class="wffront" style="width: 510px; ">""",
-		"""<table width="100%%" cellpadding="2" cellspacing="0"><tr class='mark'><td><span class='tit'> Список транспорта </span></td><td align="right">%s</td></tr></table>""" % img_close]
+		"""<table width="100%%" cellpadding="2" cellspacing="0"><tr class='bgmark'><td><span class='tit'> Список транспорта </span></td><td align="right">%s</td></tr></table>""" % img_close]
 	sinn = request.get('org_inn')
 	if sinn and sinn.isdigit():
 		intm = int(time.time())
@@ -157,11 +162,11 @@ def	set_place(inn):
 		print "~eval|mymap.setView([%s,%s], %s);" % (y, x, zoom)
 		print "~eval|L.marker([%s,%s]).bindPopup('%s').addTo(mymap).openPopup()" % (y, x, dorg['bname'])
 		if dorg['bm_ssys'] == 2:	# Пассажирские перевозки
-			print """~eval|$('#head_AA').html('<div class=asbutton> %s </div>')""" % dorg['bname']
-			print """~eval|$('#head_BB').html('<div class=asbutton onclick="list_ts();"> Список трансрорта </div>')"""
+			print """~eval|$('#head_AA').html('<div class=asbutton><i class="fa fa-list" aria-hidden="true"></i><span class="button-text"> %s </span></div>')""" % dorg['bname']
+			print """~eval|$('#head_BB').html('<div class=asbutton onclick="list_ts();"><i class="fa fa-bus" aria-hidden="true"></i><span class="button-text"> Список трансрорта </span></div>')"""
 
 def	set_region(request):
-	print 'set_region', request
+#	print 'set_region', request
 	cod_region = request.get('cod_region')
 	if cod_region and cod_region.isdigit() and int(cod_region) > 0:
 		dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
@@ -188,27 +193,30 @@ def	get_olist (bm_ssys = None):
 	return	olist
 
 def	set_organizations (request):
-	sout = ["""<div class="wffront" style="width: 550px; ">"""]
+	sout = ["""<div class="wffront" style="width: 550px; max-width: 90%">"""]
 	
 	bm_ssys = request.get('bm_ssys')
 	orgs_list = get_olist (bm_ssys)
 	org_inn = request.get('org_inn')
 	if org_inn and org_inn.isdigit() and int(org_inn) > 0:
 		int_inn = int(org_inn)
-		sout.append ("""<table width="100%%" cellpadding="2" cellspacing="0">
-			<tr><td><span class='line tit' onclick="document.myForm.org_inn.value=0; $('#widget').html(''); set_shadow ('get_tansport');">Выбрать ВСЕ организации</span></td><td align="right">%s</td></tr></table>""" % img_close)
+		sout.append ("""
+		<div class='list-group-item list-group-item-action'>
+			<span class='line tit' onclick="document.myForm.org_inn.value=0; $('#widget').html(''); set_shadow ('get_tansport');">Выбрать ВСЕ организации</span>
+			<span class="float-right">%s</span>
+		</div>""" % img_close)
 	else:
 		int_inn = 0
-		sout.append ("""<table width="100%%" cellpadding="2" cellspacing="0"><tr class='mark'><td class='tit'>Выбрать организацию:</td><td align="right">%s</td></tr></table>""" % img_close)
+		sout.append ("""<div class='list-group-item list-group-item-action active'><span class='tit'>Выбрать организацию:</span><span class="float-right">%s</span></div>""" % img_close)
 	
-	sout.append("""<table width="99%" cellpadding="2" cellspacing="0"><tr><td></td><td  align=right><b>Машин</b></td></tr>""")
+	sout.append("""<ul class='list-group'>""")
 	for inn in orgs_list.keys():
 		if int_inn and int_inn == inn:
-			sout.append("""<tr class='mark'><td>&nbsp;&nbsp;&bull; %s</td><td align=right>%s &nbsp;&nbsp;</td></tr>""" % (orgs_list[inn][0], orgs_list[inn][1]))
+			sout.append("""<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center active'>%s<span class="badge badge-light badge-pill">%s</span></li>""" % (orgs_list[inn][0], orgs_list[inn][1]))
 		else:	
-			sout.append("""<tr class='line' onclick="document.myForm.org_inn.value=%d; $('#widget').html(''); set_shadow ('get_tansport');"><td>&nbsp;&nbsp;&bull; %s</td><td align=right>%s &nbsp;&nbsp;</td></tr>""" % (
+			sout.append("""<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center' onclick="document.myForm.org_inn.value=%d; $('#widget').html(''); set_shadow ('get_tansport');">%s<span class="badge badge-primary badge-pill">%s</span></li>""" % (
 				inn, orgs_list[inn][0], orgs_list[inn][1]))
-	sout.append("</table><br>")
+	sout.append("</ul>")
 	sout.append('</div>')
 	return	'\n'.join(sout)
 
@@ -218,7 +226,7 @@ def	set_organizations (request):
 	sout.append ('<ul>')
 	for inn in orgs_list.keys():
 		if int_inn and int_inn == inn:
-			sout.append ("""<li class='mark' > %s</li>""" % orgs_list[inn][0]) 
+			sout.append ("""<li class='bgmark' > %s</li>""" % orgs_list[inn][0]) 
 		else:	sout.append ("""<li class='line' onclick="document.myForm.org_inn.value=%d; $('#widget').html(''); set_shadow ('get_tansport');" >%s</li>""" % (inn, orgs_list[inn][0]))
 	sout.append ('</ul>')
 	sout.append('</div>')

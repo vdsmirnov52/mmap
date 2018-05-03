@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Weather map</title>
+    <title>Open Map</title>
 	<link rel="stylesheet" href="/js/leaflet/leaflet.css"	crossorigin="" />
 	<script src="/js/leaflet/leaflet.js" crossorigin=""></script>
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <!--[if lte IE 8]><link rel="stylesheet" href="http://leaflet.cloudmade.com/dist/leaflet.ie.css" /><![endif]-->
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
     <script src="http://openweathermap.org/js/leaflet-layer.js"></script>
@@ -16,6 +17,8 @@
 	<script type='text/javascript' src='/jq/jquery.js'></script>
 
 	<link rel='stylesheet' type='text/css' href='/css/mmaps.css' />
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+	<link rel='stylesheet' type='text/css' href='/css/font-awesome/css/font-awesome.min.css' />
 
 <script type="text/javascript">
 function	set_shadow (shstat) {	$.ajax({data: 'shstat='+ shstat +'&' +$('form').serialize()});	}
@@ -138,14 +141,55 @@ function	list_ts () {	set_shadow('view_ts_list')	}
 </script>
   </head>
   <body>
-	<form name='myForm' action='http://212.193.103.21/tmp/mmap.html' method='post'><fieldset class='hidd'>
-	<input id='view_gosnum' name='view_gosnum' type='hidden' value='off' />
-	<input name='cod_region' type='hidden' value='' />
-	<input name='org_inn' type='hidden' value='0' />
-	<input name='bm_ssys' type='hidden' value='131072' />
+	<form name='myForm' action='http://212.193.103.21/tmp/mmap.html' method='post'>
+    <fieldset class='hidd'>
+        <input id='view_gosnum' name='view_gosnum' type='hidden' value='off' />
+        <input name='cod_region' type='hidden' value='' />
+        <input name='org_inn' type='hidden' value='0' />
+        <input name='bm_ssys' type='hidden' value='131072' />
 	</fieldset>
-	<div id='menu' style="min-width: 130px; max-width: 2100px; width: 100%; margin: 0px; padding: 0px;">
-	<table style="width: 100%; padding: 0px; border-spacing: 0px">
+	
+	<div class="container-fluid">
+	<div class="row" style="background-color:#2f75a9; padding: 3px; color: #fff; text-align: center;">
+		
+			<div id='head_AA' class="col">
+				<div id='view_gz' class='asbutton' onclick="set_shadow ('view_gzones');">
+					<i class="fa fa-object-ungroup" aria-hidden="true"></i>
+					<span class="button-text">Зоны обслуживания</span> 
+				</div>
+				</div>
+			<div id='head_BB' class="col">
+				<div id='set_org' class='asbutton' onclick="set_shadow ('set_organizations');"><i class="fa fa-bars" aria-hidden="true"></i>
+					<span class="button-text">Выбор организации</span>
+				</div>
+			</div>	
+			<div  class="col">			
+				<div class="p-1" id='last_time' > &nbsp;&nbsp;&nbsp;&nbsp; </div>
+			</div>			
+			
+			<div id='head_CC' class="col">
+		
+				<div id='load_ts' class='asbutton' onclick="set_shadow ('get_tansport');">
+					<i class="fa fa-refresh" aria-hidden="true"></i>
+					<span class="button-text">Обновить ТС</span> 
+					
+				</div>
+			</div>
+					<!--div id='head_DD' class="col-3"><div id='clear_ts' class='asbutton' onclick="clear_ts_list();"><i class="fa fa-times" aria-hidden="true"></i>
+ <span class="button-text">Очистить</span> </div></div-->
+	</div>
+	
+	
+	
+	
+	
+	<!--<div id='menu' style="min-width: 130px; max-width: 2100px; width: 100%; margin: 0px; padding: 0px;">-->
+	
+	
+	
+	
+	
+	<table style="width: 100%; padding: 0px; border-spacing: 0px; display: none">
 	<tr>
 	<td id='head_AA'><div id='view_gz' class='asbutton' onclick="set_shadow ('view_gzones');"> Зоны обслуживания </div></td>
 	<td id='head_BB'><div id='set_org' class='asbutton' onclick="set_shadow ('set_organizations');"> Выбор организации </div></td>
@@ -154,24 +198,17 @@ function	list_ts () {	set_shadow('view_ts_list')	}
 	<!--td><div id='test' class='asbutton' onclick="alert('mymap.getZoom: ' +mymap.getZoom());"> &copy; </div></td-->
 	<!--td><div id='test' class='asbutton' onclick="alert('mymap.getZoom: ' +document.myForm.org_inn.value);" > &copy; </div></td-->
 	<td><div id='last_time' class='asbutton'> &nbsp;&nbsp;&nbsp;&nbsp; </div></td>
-	<td><div id='reload' class='asbutton' onclick="document.myForm.submit();" title="Обновить"><img src="../img/reload_w24.png"></div></td>
+	<!--td><div id='reload' class='asbutton' onclick="document.myForm.submit();" title="Обновить"><img src="../img/reload_w24.png"></div></td-->
+	<td><div id='reload' class='asbutton' onclick="set_shadow('submit');" title="Обновить"><img src="../img/reload_w24.png"></div></td>
 	</tr>
 	</table>
-	<span class="line" style="position: absolute; z-index: 1111; margin: 6pt; left: 60pt; opacity: 0.8; color: #eef; background-color: #b96; padding: 4px; font-weight: bold;" onclick="set_shadow ('view_gosnum');"> Гос.&#8470;</span>
+	<span class="line btn btn-info" style="position: absolute; z-index: 1111; margin: 6pt; left: 50pt; opacity: 0.8; font-weight: bold;" onclick="set_shadow ('view_gosnum');"> Гос.&#8470;</span>
 	</div>
 
-    <div id="map" style="min-width: 300px; min-height: 300px; max-width: 2100px; height: 800px; border: thin solid #668;"></div>
-
-	<!--input id='sss' type='button' value='Обновить транспорк' onclick="set_shadow ('get_tansport');" />
-	<input id='sss' type='button' value='Выбор организации' onclick="set_shadow ('set_organizations');" />
-	<input id='sss' type='button' value='Зоны обслуживания' onclick="set_shadow ('view_gzones');" />
-	<img src='/img/circle-red.svg' onclick="clear_ts_list();" tit='Очистить' />
-	<img src='/img/circle-grn.svg' onclick="alert('mymap.getZoom: ' +mymap.getZoom());" >
-	<img src='/img/circle-blu.svg' onclick="alert(mymap);" >
-	<img src='/img/circle-gry.svg' -->
+	<div id="map" style="min-width: 300px; min-height: 300px; max-width: 2100px; height: 800px; border: thin solid #668;"></div>
 
 	</form>
 	<div id='widget' type='hidden' style=''></div> 
-	<div id='warnn' style='top: 100px left: 100px; position: absolute;' >'warnn'</div> 
+	<div id='warnn' >'warnn'</div> 
   </body>
 </html>
