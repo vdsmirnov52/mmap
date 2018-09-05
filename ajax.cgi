@@ -59,6 +59,9 @@ def     check ():
 			elif shstat == 'view_ts_list':
 				ress = rt.view_ts_list(request)
 				print '~widget|', ress
+			elif shstat == 'view_ts_config':
+				ress = rt.view_ts_config(request)
+				print '~widget|', ress
 			elif shstat == 'view_gosnum':
 		#		print request
 		#		if os.path.split(os.environ['HTTP_REFERER'])[-1] == 'temp.html':
@@ -75,9 +78,19 @@ def     check ():
 			elif shstat == 'update_ts_list':	# temp.html Get TS Обновление списка ТС
 				print '~log|'	#, request
 				rt.update_ts_list (request)
+			elif shstat == 'view_trace':		# in ['view_trace', 'set_opts']:
+				print '~log|', request
+				rt.view_trace (request)
+			elif shstat == 'set_opts':
+				print '~log|', request
+				print "ZZZ"
+				rt.view_streets(request)
+			elif 'snow_' in shstat:
+				print '~log|Snow: ', request
+				rt.snow_opts (request)
 			else:
-				print 'shstat:', shstat, request
-				print '<br>HTTP_REFERER:', referer , os.path.split(referer)
+				print '~log|shstat:', shstat, request
+				print '<br>HTTP_REFERER:', referer , os.path.split(referer)[-1]
 			'''
 			if request.has_key('this'):
 				if request['this'] == 'ajax':

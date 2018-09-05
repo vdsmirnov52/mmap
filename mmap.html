@@ -4,7 +4,10 @@
     <meta charset="UTF-8" />
     <title>Open Map</title>
 	<link rel="stylesheet" href="/js/leaflet/leaflet.css"	crossorigin="" />
+	<link rel="icon" href="/img/favicon.png" type="image/png"/>
 	<script src="/js/leaflet/leaflet.js" crossorigin=""></script>
+	<script src="/js/leaflet/proj4.js"></script>
+	<script src="/js/leaflet/proj4leaflet.js"></script>
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <!--[if lte IE 8]><link rel="stylesheet" href="http://leaflet.cloudmade.com/dist/leaflet.ie.css" /><![endif]-->
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
@@ -19,175 +22,84 @@
 	<link rel='stylesheet' type='text/css' href='/css/mmaps.css' />
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
 	<link rel='stylesheet' type='text/css' href='/css/font-awesome/css/font-awesome.min.css' />
+	<script type='text/javascript' src='/js/mmap/document_ready.js'></script>
+	<script type='text/javascript' src='/js/mmap/bymaps.js'></script>
 
 <script type="text/javascript">
-function	set_shadow (shstat) {	$.ajax({data: 'shstat='+ shstat +'&' +$('form').serialize()});	}
-
-</script>
-<script type="text/javascript">
-	$(document).ready(function () {
-	$.ajaxSetup({ url: "/cgi-bin/ajax.cgi?this=ajax", type: "post", error: onAjaxError, success: onAjaxSuccess, timeout: 30000 });
-	$('#map').css({'height': (-100 + document.documentElement.clientHeight) +'px', 'width': '100%'});	//(-10 + document.documentElement.clientWidth) +'px'});
-//	$('#menu').css({'width': (-10 + document.documentElement.clientWidth) +'px'});
-	set_shadow('get_tansport');
-
-var timerId = setInterval(set_shadow, 20000, 'view_canvas');
-
-	mymap = L.map('map').setView([56.32354, 43.99121], 12);
-
-var	rnic_nn = ' &copy; <a href="http://rnc52.ru/" title="РНИЦ Нижегородской области">RNIC 52</s>';
-var	osmLayer = new L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-	maxZoom: 18,
-	attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors |' + rnic_nn
-	}).addTo(mymap);
-/*
-var	marker = L.marker([56.32354, 43.99121]).addTo(mymap)
-	.bindPopup('A pretty CSS3 popup.<br> и текст по Русски.')
-	.openPopup();
-*/
-var	roadsLayer = new L.tileLayer('http://212.193.103.5/{alias}/{z}/{x}/{y}.png', {maxZoom: 18, attribution: rnic_nn, alias: 'enk2'});
-//var	yndx = new L.Yandex();
-//var	ytraffic = new L.Yandex("null", {traffic:true, opacity:0.8, overlay:true});
-//var	baseMaps = { "OpenStreetMap": osmLayer, 'Дороги Нижнего Новгорода': roadsLayer, 'L.Yandex': yndx },
-var	baseMaps = { "OpenStreetMap": osmLayer, 'Дороги Нижнего Новгорода': roadsLayer },
-	overlays = { };	//"Marker": marker};
-
-var	layersControl = new L.Control.Layers(baseMaps, overlays),	// overlayMaps),
-	popup = new L.Popup();
-
-mymap.addControl(layersControl);
-mymap.on('click', (e) => {
-    popup.setLatLng(e.latlng);
-    popup.setContent('Point ' +
-      ' (' + e.latlng.lat.toFixed(6) +
-      ', ' + e.latlng.lng.toFixed(6) + ')');
-    mymap.openPopup(popup);
-  })
-
-if (window.location.search) {	set_shadow('GET&get_'+ window.location.search.replace('?', ''))	}
-});
 ///////////////////////////////////////////////////
-var dict_gosnumber = [];	// Гос№
-var dict_ts_list = [];	// Транспорт
-var list_regionn = [];	// районы города
-
-function	clear_map_object (obj) {
-	for (k in obj) {
-		if (obj.hasOwnProperty(k))	obj[k].remove();
-		delete(obj[k])
-	}
-}
-
-function	out_data (data) {
-//	clear_ts_list ();
-	clear_map_object (dict_ts_list);
-	clear_map_object (dict_gosnumber);
-	var LeafIcon = L.Icon.extend({options: {iconAnchor: [12,24], popupAnchor: [0, -27]}});	//, shadowAnchor: [16,37], shadowUrl: '/img/marker-shadow.png', shadowSize: [51, 37]}});
-	var tsIcons = {};
-	tsIcons['blue'] = new LeafIcon({iconUrl: '/img/circle-blu.svg'});
-	tsIcons['green'] = new LeafIcon({iconUrl: '/img/circle-grn.svg'});
-	tsIcons['grey'] = new LeafIcon({iconUrl: '/img/circle-gry.svg'});
-	tsIcons['red'] = new LeafIcon({iconUrl: '/img/circle-red.svg'});
-//	alert (data);
-	var plist = eval(data);	//'[["44.054517", "56.366", "1520845490", "Привет QWER"], [ "44.068579", "56.372314", "1520846572", "В132ХА152" ]]');	//data);
-	for (var i=0; i<=plist.length-1; i++) {
-//		alert (plist[i])
-		var YX = plist[i][0];
-		var opts = plist[i][1]
-		if (opts['icon'] && tsIcons.hasOwnProperty(opts['icon'])) {
-			var jIcon = tsIcons[opts['icon']];
-		} else	var jIcon = tsIcons['red'];
-		if (document.getElementById('view_gosnum'))
-			dict_ts_list[i] = L.marker(YX, {icon: jIcon}).addTo(mymap).bindPopup(opts['gosnum'] + opts['sp'] +'<br>' +opts['bn'] +opts['dt']);
-		else	dict_ts_list[i] = L.marker(YX, {icon: jIcon}).addTo(mymap).bindTooltip(opts['gosnum']).bindPopup(opts['gosnum'] + opts['sp'] +'<br>' +opts['bn'] +opts['dt']);
-		dict_gosnumber[i] = L.marker(YX, {icon: L.divIcon({className: 'icon', html: opts['gosnum']})});	//.addTo(mymap);
-		if (document.myForm.view_gosnum.value == 'on')	dict_gosnumber[i].addTo(mymap);
-	}
-}
-
-function view_gosnumber(j) {
-	var ln = 0;
-	for (k in dict_gosnumber) {
-		ln++;
-		if (j == 2)
-			dict_gosnumber[k].remove();
-		else	dict_gosnumber[k].addTo(mymap);
-	}
-	if (ln >0) {
-		if (j == 2)
-			document.myForm.view_gosnum.value='off';
-		else	document.myForm.view_gosnum.value='on';
-	}
-}
-
-function mmm (txt) {
-	var LeafIcon = L.Icon.extend({options: {iconAnchor: [12,24], popupAnchor: [0, -27], shadowAnchor: [16,37], shadowUrl: '/img/marker-shadow.png', shadowSize: [51, 37]}});
-	var redIcon = new LeafIcon({iconUrl: '/img/circle-red.svg'})
-	var marker = [L.marker([56.3271,44.0074], {icon: redIcon}).addTo(mymap).bindPopup(txt).openPopup(),
-	L.marker([56.31271,44.01074], {icon: redIcon}).addTo(mymap).bindPopup('111 txt').openPopup()];
-	L.marker([56.3271,44.02074], {icon: redIcon}).addTo(mymap).bindPopup('222 txt').openPopup();
-	L.marker([56.33271,44.03074], {icon: redIcon}).addTo(mymap).bindPopup('333 txt');	//.openPopup();
-} 
-function check_bounds () {
-	var bounds = mymap.getBounds();
-	var BBB = 'YX: ' + bounds['_northEast'] +', 00: ' + bounds['_southWest'];
-//	orthEast: LatLng(56.399655, 44.145813)	- Левый верхний
-//	southWest: LatLng(56.247356, 43.836823)	- Првыый нижний
-	alert (BBB);
-}
 
 function	list_ts () {	set_shadow('view_ts_list')	}
+function	config_ts () {	set_shadow('view_ts_config')	}
 ///////////////////////////////////////////////////
 </script>
-  </head>
-  <body>
-	<form name='myForm' action='http://212.193.103.21/tmp/mmap.html' method='post'>
+</head>
+<body>
+<form name='myForm' action='http://212.193.103.21/tmp/mmap.html' method='post'>
     <fieldset class='hidd'>
         <input id='view_gosnum' name='view_gosnum' type='hidden' value='off' />
         <input name='cod_region' type='hidden' value='' />
         <input name='org_inn' type='hidden' value='0' />
         <input name='bm_ssys' type='hidden' value='131072' />
+	<input name='snow_stat' type='hidden' value='' />
+	<input name='snow_flag' type='hidden' value='' />
 	</fieldset>
 	
-	<div class="container-fluid">
+<div class="container-fluid">
 	<div class="row" style="background-color:#2f75a9; padding: 3px; color: #fff; text-align: center;">
-		
-			<div id='head_AA' class="col">
-				<div id='view_gz' class='asbutton' onclick="set_shadow ('view_gzones');">
-					<i class="fa fa-object-ungroup" aria-hidden="true"></i>
+		<div id='head_AA' class="col">
+			<div id='view_gz' class='asbutton' onclick="set_shadow ('view_gzones');">
+					<i class="fa fa-object-ungroup fa-lg" aria-hidden="true"></i>
 					<span class="button-text">Зоны обслуживания</span> 
-				</div>
-				</div>
-			<div id='head_BB' class="col">
-				<div id='set_org' class='asbutton' onclick="set_shadow ('set_organizations');"><i class="fa fa-bars" aria-hidden="true"></i>
-					<span class="button-text">Выбор организации</span>
-				</div>
-			</div>	
-			<div  class="col">			
-				<div class="p-1" id='last_time' > &nbsp;&nbsp;&nbsp;&nbsp; </div>
-			</div>			
-			
-			<div id='head_CC' class="col">
-		
-				<div id='load_ts' class='asbutton' onclick="set_shadow ('get_tansport');">
-					<i class="fa fa-refresh" aria-hidden="true"></i>
-					<span class="button-text">Обновить ТС</span> 
-					
-				</div>
 			</div>
-					<!--div id='head_DD' class="col-3"><div id='clear_ts' class='asbutton' onclick="clear_ts_list();"><i class="fa fa-times" aria-hidden="true"></i>
- <span class="button-text">Очистить</span> </div></div-->
+		</div>
+		<div id='head_BB' class="col">
+			<div id='set_org' class='asbutton' onclick="set_shadow ('set_organizations');"><i class="fa fa-bars fa-lg" aria-hidden="true"></i>
+					<span class="button-text">Выбор организации</span>
+			</div>
+		</div>	
+		<div class="col">			
+			<div class="p-1" id='last_time' > &nbsp;&nbsp;&nbsp;&nbsp; </div>
+			</div>			
+		<div class="col">
+			<div class="asbutton" id="set_opts" onclick="set_shadow ('set_opts');">
+			<i class="fa fa-cog fa-lg" aria-hidden="true"></i>
+			<!--
+			<i class="fa fa-flag-checkered fa-lg" aria-hidden="true"></i>
+			 Opts	-->
+			</div>
+		</div>
+		<div >
+			<div class="asbutton" id="set_opts" onclick="set_shadow ('snow_zone');" title='snow_zone'>
+				<i class="fa fa-object-ungroup fa-lg" aria-hidden="true"></i>
+			</div>
+		</div>
+		<div >
+			<div class="asbutton" id="set_opts" onclick="set_shadow ('snow_test');" title='snow_test'>
+				<i class="fa fa-snowflake-o fa-lg" aria-hidden="true"></i>
+			</div>
+		</div>
+		<div >
+			<div class="asbutton" id="set_opts" onclick="set_shadow ('snow_info');" title='snow_info'>
+				<i class="fa fa-info fa-lg" aria-hidden="true"></i>
+			</div>
+		</div>
+		<div >
+			<div class="asbutton" id="set_opts" onclick="set_shadow ('snow_opts');" title='snow_opts'>
+				<i class="fa fa-wrench fa-lg" aria-hidden="true"></i>
+			</div>
+		</div>
+
+		<div id='head_CC' class="col">
+			<div id='load_ts' class='asbutton' onclick="set_shadow ('get_tansport');">
+					<i class="fa fa-refresh fa-lg" aria-hidden="true"></i>
+					<span class="button-text">Обновить ТС</span> 
+			</div>
+		</div>
+			<!--div id='head_DD' class="col-3"><div id='clear_ts' class='asbutton' onclick="clear_ts_list();"><i class="fa fa-times" aria-hidden="true"></i>
+				<span class="button-text">Очистить</span> </div></div-->
 	</div>
 	
-	
-	
-	
-	
 	<!--<div id='menu' style="min-width: 130px; max-width: 2100px; width: 100%; margin: 0px; padding: 0px;">-->
-	
-	
-	
-	
 	
 	<table style="width: 100%; padding: 0px; border-spacing: 0px; display: none">
 	<tr>
@@ -203,12 +115,14 @@ function	list_ts () {	set_shadow('view_ts_list')	}
 	</tr>
 	</table>
 	<span class="line btn btn-info" style="position: absolute; z-index: 1111; margin: 6pt; left: 50pt; opacity: 0.8; font-weight: bold;" onclick="set_shadow ('view_gosnum');"> Гос.&#8470;</span>
-	</div>
+	<span class="line btn btn-info" style="position: absolute; z-index: 1111; margin: 6pt; left: 110pt; opacity: 0.8; font-weight: bold;" onclick="set_shadow ('view_trace');"> <i class="fa fa-flag-checkered fa-lg" aria-hidden="true"></i> </span>
+</div>	<!-- container-fluid	-->
 
 	<div id="map" style="min-width: 300px; min-height: 300px; max-width: 2100px; height: 800px; border: thin solid #668;"></div>
 
-	</form>
 	<div id='widget' type='hidden' style=''></div> 
-	<div id='warnn' >'warnn'</div> 
-  </body>
+	</form>
+	<!--div id='warnn' >'warnn'</div--> 
+	<div id='log' style="height: 30px; overflow: auto">'log'</div> 
+</body>
 </html>
