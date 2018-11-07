@@ -78,6 +78,12 @@ def     check ():
 			elif shstat == 'update_ts_list':	# temp.html Get TS Обновление списка ТС
 				print '~log|'	#, request
 				rt.update_ts_list (request)
+			elif shstat == 'update_recv_ts':
+				print '~log|'
+				rt.update_recv_ts(request)
+			elif shstat == 'check_autos':
+				print '~log|'
+				print '~widget|', rt.check_autos (request)
 			elif shstat == 'view_trace':		# in ['view_trace', 'set_opts']:
 				print '~log|', request
 				rt.view_trace (request)

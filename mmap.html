@@ -54,12 +54,14 @@ function	config_ts () {	set_shadow('view_ts_config')	}
 		</div>
 		<div id='head_BB' class="col">
 			<div id='set_org' class='asbutton' onclick="set_shadow ('set_organizations');"><i class="fa fa-bars fa-lg" aria-hidden="true"></i>
-					<span class="button-text">Выбор организации</span>
+				<span class="button-text">Выбор организации</span>
 			</div>
 		</div>	
-		<div class="col">			
-			<div class="p-1" id='last_time' > &nbsp;&nbsp;&nbsp;&nbsp; </div>
-			</div>			
+		<div class="col">
+			<div id='autos' class='asbutton' onclick="set_shadow ('check_autos');">	<i class="fa fa-truck fa-lg" aria-hidden="true"></i>
+				<span class="button-text">Транспорт</span>
+			</div>
+		</div>
 		<div class="col">
 			<div class="asbutton" id="set_opts" onclick="set_shadow ('set_opts');">
 			<i class="fa fa-cog fa-lg" aria-hidden="true"></i>
@@ -68,33 +70,37 @@ function	config_ts () {	set_shadow('view_ts_config')	}
 			 Opts	-->
 			</div>
 		</div>
-		<div >
+		<!--div >
 			<div class="asbutton" id="set_opts" onclick="set_shadow ('snow_zone');" title='snow_zone'>
-				<i class="fa fa-object-ungroup fa-lg" aria-hidden="true"></i>
-			</div>
+				<i class="fa fa-object-ungroup fa-lg" aria-hidden="true"></i> </div>
 		</div>
 		<div >
 			<div class="asbutton" id="set_opts" onclick="set_shadow ('snow_test');" title='snow_test'>
-				<i class="fa fa-snowflake-o fa-lg" aria-hidden="true"></i>
-			</div>
-		</div>
+				<i class="fa fa-snowflake-o fa-lg" aria-hidden="true"></i> </div>
+		</div-->
 		<div >
 			<div class="asbutton" id="set_opts" onclick="set_shadow ('snow_info');" title='snow_info'>
-				<i class="fa fa-info fa-lg" aria-hidden="true"></i>
-			</div>
+				<i class="fa fa-info fa-lg" aria-hidden="true"></i> </div>
 		</div>
 		<div >
 			<div class="asbutton" id="set_opts" onclick="set_shadow ('snow_opts');" title='snow_opts'>
-				<i class="fa fa-wrench fa-lg" aria-hidden="true"></i>
-			</div>
+				<i class="fa fa-wrench fa-lg" aria-hidden="true"></i> </div>
 		</div>
+		<div class=""><div class="p-1" id='last_time' > &nbsp;&nbsp;&nbsp;&nbsp; </div> </div>			
 
 		<div id='head_CC' class="col">
-			<div id='load_ts' class='asbutton' onclick="set_shadow ('get_tansport');">
-					<i class="fa fa-refresh fa-lg" aria-hidden="true"></i>
-					<span class="button-text">Обновить ТС</span> 
-			</div>
+			<span id='load_ts' class='asbutton' onclick="set_shadow ('get_tansport');">
+				<i class="fa fa-refresh fa-lg" aria-hidden="true"></i>
+				<span class="button-text">Обновить ТС</span>
+			</span>
+			<span id='reload_ts' class='asbutton' onclick="reload_ts();">
+				<span id='updating_ts' class="button-text"> <i class="fa fa-refresh fa-lg" aria-hidden="true" title="Обновлять данные"></i> </span>
+			</span>
 		</div>
+		<!--div id='head_YY' class="">
+			<div id='reload_ts' class='asbutton' onclick="reload_ts();">
+			<span id='updating_ts' class="button-text"> <i class="fa fa-refresh fa-lg" aria-hidden="true" title="Обновлять данные"></i> </span> </div>
+		</div-->
 			<!--div id='head_DD' class="col-3"><div id='clear_ts' class='asbutton' onclick="clear_ts_list();"><i class="fa fa-times" aria-hidden="true"></i>
 				<span class="button-text">Очистить</span> </div></div-->
 	</div>

@@ -74,10 +74,10 @@ def	view_gzones (request):
 	sout.append ('')
 	if cod_region and cod_region.isdigit() and int(cod_region) > 0:
 		sout.append("""<div class='list-group-item list-group-item-action'><span onclick="document.myForm.cod_region.value=''; $('#widget').html(''); mymap.setView([56.32, 43.95], 11); set_shadow ('set_region');">
-								<span class="tit">Вернутся в Центр города </span>
-							</span>
-							<span class="float-right">%s</span>
-						</div>""" % img_close)
+					<span class="tit">Вернутся в Центр города </span>
+					</span>
+					<span class="float-right">%s</span>
+					</div>""" % img_close)
 	else:
 		sout.append ("""<div class='list-group-item list-group-item-action active'><span class='tit' onclick="$('#widget').html('');">&nbsp;Выбрать район города:</span><span class="float-right">%s</span></div>""" % img_close)
 	
@@ -195,6 +195,9 @@ def	set_place(inn):
 			print """~eval|$('#head_AA').html('<div class=asbutton onclick="config_ts();"><i class="fa fa-list" aria-hidden="true"></i><span class="button-text"> %s </span></div>')""" % dorg['bname']
 			print """~eval|$('#head_BB').html('<div class=asbutton onclick="list_ts();"><i class="fa fa-bus" aria-hidden="true"></i><span class="button-text"> Список трансрорта </span></div>')"""
 
+#	UPDATE polygons SET region = (SELECT region FROM plabel WHERE polygons.id_lab = plabel.id_lab) WHERE polygons.region IS NULL;
+#	UPDATE polygons SET categ = (SELECT categ FROM plabel WHERE polygons.id_lab = plabel.id_lab) WHERE polygons.categ IS NULL;
+
 def	set_region(request):
 	""" Выбор района города	"""
 #	print 'set_region', request
@@ -210,14 +213,25 @@ def	set_region(request):
 		print "~eval|if (! list_regionn.hasOwnProperty(%s)) { list_regionn[%s] = L.polygon([[%s]], {color: 'red', opacity: 0.2}).addTo(mymap); }" % (cod_region, cod_region, '],['.join(plist))	#, cod_region)
 		### Anti Snow
 		print "~log| Anti Snow cod_region:", cod_region
+	#	return
+		out_streets (request)
+	else:	print "~eval| clear_map_object (list_regionn);"
+
+def	out_streets (request, scateg = 'AB'):
+	""" Показать территории уборки снега	"""
+	cod_region = request.get('cod_region')
+	try:
 		asnow = dbtools.dbtools('host=127.0.0.1 dbname=anti_snow port=5432 user=smirnov')
-#		if cod_region == '8':	cod_region = '7'
-#		elif cod_region == '7':	cod_region = '8'
-		print "SELECT plgn, idp, porder tcreate, rname FROM vpolygons WHERE region = %s ORDER BY idp, porder" % cod_region
-		rows = asnow.get_rows ("SELECT plgn, idp, porder tcreate FROM vpolygons WHERE region = %s ORDER BY idp, porder" % cod_region)
+	#	query = "SELECT plgn, idp, porder, tcreate, v.categ FROM polygons p, vplabel v WHERE p.id_lab = v.id_lab AND v.region = %s ORDER BY idp, porder;" % cod_region	### Все Дороги
+		if scateg == 'AB':
+			query = "SELECT plgn, idp, porder, tcreate, categ FROM polygons WHERE region = %s AND categ < 3 ORDER BY idp, porder" % cod_region	### Дороги категории А, Б ТОЛЬКО
+		else:	query = "SELECT plgn, idp, porder, tcreate, categ FROM polygons WHERE region = %s ORDER BY idp, porder" % cod_region			### Все Дороги
+		print query
+		rows = asnow.get_rows (query)
 		if rows:
 			for r in rows:
-				plgn, idp, porder = r
+				plgn, idp, porder, tcreate, categ = r
+				if not porder:	porder = 0
 				ind = 10*idp +porder
 				plist = []
 				for p in plgn[1:-1].replace('),(', '):(').split(':'):
@@ -225,13 +239,12 @@ def	set_region(request):
 					plist.append(xy[1] +','+ xy[0])
 			#	print idp, porder, ind, plist
 				print "~eval|if (! list_regionn.hasOwnProperty(%s)) { list_regionn[%s] = L.polygon([[%s]], {color: '#aa00bb', opacity: 0.2}).addTo(mymap); }" % (ind, ind, '],['.join(plist))
-	else:
-		print "~eval| clear_map_object (list_regionn);"
+	except:	print "~log|except: out_streets"
 
 def	get_olist (bm_ssys = None):
 	dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
 	olist = {}
-	if not bm_ssys:	bm_ssys = 131072
+	if not bm_ssys:	bm_ssys = 131072	# ДТ-НН АнтиСнег
 #	res = dbi.get_table ('org_desc', 'inn > 0 ORDER BY bname')
 #	res = dbi.get_table ('org_desc', 'inn > 0 AND stat & 1 = 1 ORDER BY bname')
 	res = dbi.get_table ('org_desc', 'inn > 0 AND stat & 1 = 1 AND bm_ssys & %s = %s ORDER BY bname' % (bm_ssys, bm_ssys))
@@ -270,6 +283,94 @@ def	set_organizations (request):
 	sout.append('</div>')
 	return	'\n'.join(sout)
 
+def	update_recv_ts (request):
+	dbcntr = dbtools.dbtools('host=212.193.103.20 dbname=contracts port=5432 user=smirnov')
+	dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
+	query = "SELECT id_ts, gosnum, marka, a.device_id, inn FROM transports t, organizations o, atts a WHERE o.bm_ssys=131072 AND t.id_org = o.id_org AND id_ts = autos AND a.last_date > '%s' ORDER BY o.id_org;" % time.strftime("%Y-%m-%d 00:00:00", time.localtime (time.time ()))
+	rows = dbcntr.get_rows (query)
+	if not rows:
+		print query
+		return
+	for r in rows:
+		id_ts, gosnum, marka, device_id, inn = r
+		if device_id < 0:
+			print "W\t", id_ts, gosnum, marka, device_id, inn
+			continue
+		rr = dbi.get_row ("SELECT gosnum, device_id, inn FROM recv_ts WHERE gosnum = '%s' OR device_id = %s" % (gosnum, device_id))
+		if rr:
+			if device_id < 0 and gosnum == g :		continue 
+			g, d, i = rr
+			if gosnum == g and device_id == d and inn == i:	continue
+			print g, d, i, '!=\t', 
+		else:
+			query = "INSERT INTO recv_ts (idd, inn, gosnum, marka, device_id, stat_ts) VALUES ('idd%s', %s, '%s', '%s', %s, 0)" % (device_id, inn, gosnum, marka, device_id)
+			print query, dbi.qexecute (query)
+	#	print id_ts, gosnum, marka, device_id, inn, '<br>'
+	print "UPDATE org_desc SET count_ts",	dbi.qexecute ("UPDATE org_desc SET count_ts = (SELECT count(*) FROM recv_ts WHERE org_desc.inn = recv_ts.inn);")
+
+def	check_autos (request):
+	# wffront
+	currtm = int(time.time())
+	print	request.get('bm_ssys'), request.get('org_inn')
+	sout = ["""<div class="wffront" style="width: 550px; max-width: 90%%; min-height: 550px; left: 500px; ">
+	<div class='list-group-item list-group-item-action active'><span class='tit'>Транспорт</span><span class="float-right">%s</span></div> """ % img_close]
+	sout.append("""<ul class='list-group'>""")
+	sout.append("<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center'>")
+	sout.append("""<input type='button' class='butt' onclick="set_shadow ('update_recv_ts');" value='Обновить списки ТС' />	""")
+	categ_ts = request.get('categ_ts')
+	if categ_ts == '1':
+		sout.append("""<span>Категория ТС:<select class='select' name='categ_ts'><option value=''> </option><option value='1' selected> 1 </option><option value='2'> 2 </option></select></span>""")
+	elif categ_ts == '2':
+		sout.append("""<span>Категория ТС:<select class='select' name='categ_ts'><option value=''> </option><option value='1'> 1 </option><option value='2' selected> 2 </option></select></span>""")
+	else:	sout.append("""<span>Категория ТС:<select class='select' name='categ_ts'><option value=''> </option><option value='1'> 1 </option><option value='2'> 2 </option></select></span>""")
+#	sout.append ("#"*22 +'<br>')
+
+	sout.append("</li>")
+	sout.append("<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center'>")
+	bm_ssys = request.get('bm_ssys')
+	org_inn = request.get('org_inn')
+#	print bm_ssys
+	sout.append (""" Организация:
+	<select class='select' name='set_inn' onchange="document.myForm.org_inn.value=document.myForm.set_inn.value; set_shadow('check_autos');" > <option value=0>  </option>
+	""")
+	orgs_list = get_olist (bm_ssys)
+	for inn in orgs_list.keys():
+		if str(inn) == org_inn:
+			sout.append ("<option value=%s selected > %s </option>" % (inn, orgs_list[inn][0]))
+		else:	sout.append ("<option value=%s> %s </option>" % (inn, orgs_list[inn][0]))
+	sout.append ("</select>")
+	sout.append("</li>")
+	sout.append("""<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center'>
+	<div style='width: 100%; min-height: 500px; max-height: 700px; overflow: auto;'>
+	<table style='width: 100%;'>""")
+	ts_list = []
+	if org_inn.isdigit() and int(org_inn) > 0:
+		dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
+		if categ_ts == '1':
+			query = "SELECT gosnum, marka, device_id, stat_ts FROM recv_ts WHERE inn = %s AND stat_ts = %s" % (org_inn, categ_ts)
+		elif categ_ts == '2':
+			query = "SELECT gosnum, marka, device_id, stat_ts FROM recv_ts WHERE inn = %s AND stat_ts = %s" % (org_inn, categ_ts)
+		else:	query = "SELECT gosnum, marka, device_id, stat_ts FROM recv_ts WHERE inn = %s" % org_inn
+		print query
+		ts_list = dbi.get_rows (query)
+		for r in ts_list:
+			gosnum, marka, device_id, stat_ts = r
+			rlp = dbi.get_row ("SELECT t FROM last_pos WHERE idd = '%s';" % device_id)
+			if not rlp:
+				srlp = "<span class='bferr'>Нет данных</span>"
+			else:
+				if currtm - rlp[0] > 86400:
+					srlp = time.strftime("<span class='bfligt'>%d.%m.%Y </span>", time.localtime(rlp[0]))
+				else:	srlp = time.strftime("<span class='bfinf'>%H:%M:%S </span>", time.localtime(rlp[0]))
+			sout.append ("<tr><td> %s </td><td>%s<td><td> %s </td><td> %s </td></tr>" % (gosnum, marka, srlp, stat_ts))	#(r[3], r[4]))
+	#		print r, '<br>'
+	sout.append("</table></div></li>")
+	if len(ts_list) > 0:
+		sout.append("<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center'><span class='finf sz12'>Найдено %s машин.</span></li>" % len(ts_list))
+	sout.append("</ul>")
+	sout.append('</div>')
+	return	'\n'.join(sout)
+
 def	get_tsbyorg (id_org, inn):
 	dbi = dbtools.dbtools('host=212.193.103.20 dbname=contracts port=5432 user=smirnov')
 
@@ -284,7 +385,7 @@ def	get_tsbyorg (id_org, inn):
 	return	out
 	
 def	update_ts_list (request):
-
+	""" Обновить информацию о транспорте организаций РНИС	"""
 	referer = os.environ.get('HTTP_REFERER')
 	if referer:	print referer, os.path.split(referer), '<hr>'
 	dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
@@ -309,6 +410,7 @@ def	update_ts_list (request):
 			if not dbi.qexecute(query):
 				print query, '<br>'
 				return
+	
 def	view_trace (request):
 	print 'view_trace'
 	points = []	# '56.5,44', '57,44', '57,43.5', '56.5, 43.5' ]
@@ -339,6 +441,13 @@ def	view_trace (request):
 	print "~eval| set_shadow ('get_tansport');"
 
 def	snow_zone (request):
+	znames = ['autozavod.json', 'kanavino.json', 'lenin.json', 'moskva.json', 'nijegorod.json', 'priofski.json', 'sovetski.json', 'sormovo.json']
+	zn = request.get('zone_name')
+	print "QQQ=", zn, 1+znames.index(zn)
+	request['cod_region'] = 1+znames.index(zn)
+	print request
+	return	out_streets (request, scateg = 'ALL')
+	'''
 		if request.has_key('zone_name'):
 			fdata = r"/home/smirnov/MyTests/Wialon/data/" + request['zone_name']
 		else:
@@ -347,7 +456,8 @@ def	snow_zone (request):
 		f = open (fdata, 'r')
 		data = f.read()
 		print "~eval| clear_map_object (list_streets);  list_streets [1]= new L.Proj.geoJson(%s).addTo(mymap);" % data  # EPSG:3857
-	
+	'''
+
 def	table_mask ():
 	dbasnow = dbtools.dbtools('host=127.0.0.1 dbname=anti_snow port=5432 user=smirnov')
 #	select * FROM pmask WHERE lon > 2550 AND lon < 4000 AND lat > 1050 AND lat < 1500 AND tlife >=0;
@@ -397,8 +507,10 @@ def	snow_opts (request):
 		print "~log|snow_to_send"
 		dbasnow = dbtools.dbtools('host=127.0.0.1 dbname=anti_snow port=5432 user=smirnov')
 	#	rid | tevent | gosnum | quality | slines
+		rows = dbasnow.get_rows ("select * FROM to_send ORDER BY tevent DESC")	# LIMIT 100")	# WHERE id < 1111"):
+		print dbasnow.desc, len (rows)
 		print "~eval| clear_map_object(list_tracks);"
-		for r in dbasnow.get_rows ("select * FROM to_send ORDER BY tevent DESC LIMIT 100"):	# WHERE id < 1111"):
+		for r in rows:
 			rid, tevent, gosnum, quality, slines = r
 			jlines = eval(slines)
 			if jlines:
@@ -413,8 +525,14 @@ def	snow_opts (request):
 					olines.append(ol)
 			#	print len (olines)
 			#	print olines
-
-				print "~eval| list_tracks[%s] = new L.Polyline(%s, { color: '#085', weight: 10, opacity: 0.2 }).addTo(mymap);" % (11, str(olines))
+				if r[dbasnow.desc.index('quality')][0] == '1':
+					color = '#ca0'
+				elif r[dbasnow.desc.index('quality')][0] == '2':
+					color = '#4a0'
+				elif r[dbasnow.desc.index('quality')][0] == '3':
+					color = '#085'
+				else:	color = '#a0a'
+				print "~eval| list_tracks['%s'] = new L.Polyline(%s, { color: '%s', weight: 10, opacity: 0.2 }).addTo(mymap);" % (r[dbasnow.desc.index('gosnum')], str(olines), color)
 
 	elif request['shstat'] == 'snow_zone':
 		'''
@@ -479,6 +597,10 @@ def	snow_opts (request):
 			<option value=''> None </option> <option value='AND stat = 0'> stat = 0 </option> <option value='AND stat >= 0'> stat >= 0 </option>
 			<option value='AND stat > 0'> stat > 0 </option>
 			<option value='AND stat IS NULL'> stat IS NULL </option>
+			<option value='AND categ = 1'> categ = A </option>
+			<option value='AND categ = 2'> categ = B </option>
+			<option value='AND categ > 2'> categ Прочие </option>
+			<option value='AND categ IS NULL'> categ IS NULL </option>
 			</select></span></li>"""
 	#	print """<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center'>%s<span class="badge badge-light badge-pill">%s</span></li>""" % ('123456', 654321)
 		print """<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center'>"""
