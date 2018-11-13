@@ -144,8 +144,8 @@ def	view_ts_list (request):
 				if jtm:
 					stm = str_time(jtm, intm)
 					gosnum = "<span class='bfinf'> %s </span>" % gosnum	#r[d.index('gosnum')]
-				#	trclass = """class='line' onclick="$('#widget').html(''); mymap.setView([%s,%s]); set_shadow('get_tansport');" """ % (r[d.index('y')], r[d.index('x')])
-					onclick = """ onclick="$('#widget').html(''); mymap.setView([%s,%s]); set_shadow('get_tansport');" """ % (r[d.index('y')], r[d.index('x')])
+				#	trclass = """class='line' onclick="$('#widget').html(''); mymap.setView([%s,%s]); set_shadow('get_transport');" """ % (r[d.index('y')], r[d.index('x')])
+					onclick = """ onclick="$('#widget').html(''); mymap.setView([%s,%s]); set_shadow('get_transport');" """ % (r[d.index('y')], r[d.index('x')])
 				else:
 					stm = ''
 					gosnum = "<span class='bferr'> %s </span>" % gosnum	#r[d.index('gosnum')]
@@ -263,7 +263,7 @@ def	set_organizations (request):
 		int_inn = int(org_inn)
 		sout.append ("""
 		<div class='list-group-item list-group-item-action'>
-			<span class='line tit' onclick="document.myForm.org_inn.value=0; $('#widget').html(''); set_shadow ('get_tansport');">Выбрать ВСЕ организации</span>
+			<span class='line tit' onclick="document.myForm.org_inn.value=0; $('#widget').html(''); set_shadow ('get_transport');">Выбрать ВСЕ организации</span>
 			<span class="float-right">%s</span>
 		</div>""" % img_close)
 	else:
@@ -277,7 +277,7 @@ def	set_organizations (request):
 				orgs_list[inn][0], orgs_list[inn][1]))
 		else:	
 			sout.append("""<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center'
-				onclick="document.myForm.org_inn.value=%d; $('#widget').html(''); set_shadow ('get_tansport');">%s<span class="badge badge-primary badge-pill">%s</span></li>""" % (
+				onclick="document.myForm.org_inn.value=%d; $('#widget').html(''); set_shadow ('get_transport');">%s<span class="badge badge-primary badge-pill">%s</span></li>""" % (
 				inn, orgs_list[inn][0], orgs_list[inn][1]))
 	sout.append("</ul>")
 	sout.append('</div>')
@@ -287,6 +287,7 @@ def	update_recv_ts (request):
 	dbcntr = dbtools.dbtools('host=212.193.103.20 dbname=contracts port=5432 user=smirnov')
 	dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
 	query = "SELECT id_ts, gosnum, marka, a.device_id, inn FROM transports t, organizations o, atts a WHERE o.bm_ssys=131072 AND t.id_org = o.id_org AND id_ts = autos AND a.last_date > '%s' ORDER BY o.id_org;" % time.strftime("%Y-%m-%d 00:00:00", time.localtime (time.time ()))
+#	print query
 	rows = dbcntr.get_rows (query)
 	if not rows:
 		print query
@@ -294,7 +295,7 @@ def	update_recv_ts (request):
 	for r in rows:
 		id_ts, gosnum, marka, device_id, inn = r
 		if device_id < 0:
-			print "W\t", id_ts, gosnum, marka, device_id, inn
+#			print "W\t", id_ts, gosnum, marka, device_id, inn
 			continue
 		rr = dbi.get_row ("SELECT gosnum, device_id, inn FROM recv_ts WHERE gosnum = '%s' OR device_id = %s" % (gosnum, device_id))
 		if rr:
@@ -411,12 +412,14 @@ def	update_ts_list (request):
 				print query, '<br>'
 				return
 	
-def	view_trace (request):
+def	view_trace (request, dtime = None):
 	print 'view_trace'
 	points = []	# '56.5,44', '57,44', '57,43.5', '56.5, 43.5' ]
 #	print "~eval| clear_map_object(list_tracks); list_tracks[%s] = new L.Polyline([[%s]], { color: 'blue', weight: 3, opacity: 0.5 }).addTo(mymap); mymap.fitBounds(list_tracks['blue'].getBounds());" % (j, "],[".join(points) )
 	dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
-	res = dbi.get_table ('vdata_pos', "t > %d AND x > 0 ORDER BY ida, t " % (int(time.time()) - 4*3600))
+	if dtime and dtime.isdigit():
+		res = dbi.get_table ('vdata_pos', "t > %d AND x > 0 ORDER BY ida, t " % (int(time.time()) - int(dtime)))
+	else:	res = dbi.get_table ('vdata_pos', "t > %d AND x > 0 ORDER BY ida, t " % (int(time.time()) - 3600))	#4*3600))
 	if not res:
 		print "view_trace: Нет данных!"
 		return
@@ -438,7 +441,7 @@ def	view_trace (request):
 	if points:
 		j += 1
 		print "list_tracks[%s] = new L.Polyline([[%s]], { color: 'blue', weight: 3, opacity: 0.5 }).addTo(mymap);" % (j, "],[".join(points) )
-	print "~eval| set_shadow ('get_tansport');"
+	print "~eval| set_shadow ('get_transport');"
 
 def	snow_zone (request):
 	znames = ['autozavod.json', 'kanavino.json', 'lenin.json', 'moskva.json', 'nijegorod.json', 'priofski.json', 'sovetski.json', 'sormovo.json']
@@ -628,7 +631,7 @@ def	snow_opts (request):
 		<li><span onclick="set_shadow ('snow_zone&zone_name=sormovo.json');">Сормовский</span>
 			<span class="badge badge-light badge-pill" onclick="set_shadow('snow_test&region_id=8');">Сетка</li>
 			</ul></li>"""
-#		print """<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center active' onclick="document.myForm.org_inn.value=%d; $('#widget').html(''); set_shadow ('get_tansport');">%s<span class="badge badge-primary badge-pill">%s</span></li>""" % (987654, 'qwer', 'QWERT')
+#		print """<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center active' onclick="document.myForm.org_inn.value=%d; $('#widget').html(''); set_shadow ('get_transport');">%s<span class="badge badge-primary badge-pill">%s</span></li>""" % (987654, 'qwer', 'QWERT')
 		print """<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center active'>Карта<span class="badge badge-primary badge-pill">QWER</span></li>"""
 		print """<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-cente'>"""
 		table_mask ()

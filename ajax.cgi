@@ -34,7 +34,7 @@ def     check ():
 				get_inn = request.get('get_inn').strip()
 				if get_inn and get_inn.isdigit():
 						rt.set_place(get_inn)
-						print "~eval|document.myForm.org_inn.value=%s; $('#widget').html(''); set_shadow ('get_tansport');" % get_inn
+						print "~eval|document.myForm.org_inn.value=%s; $('#widget').html(''); set_shadow ('get_transport');" % get_inn
 				sys.exit()
 
 			if shstat == 'submit':
@@ -44,10 +44,10 @@ def     check ():
 			#	print referer
 				sys.exit()
 
-			if shstat == 'get_tansport':
+			if shstat == 'get_transport':
 				ts_list = rt.get_ts(request)
 				if ts_list:
-					print "~eval|out_data('%s');" % json.dumps(ts_list)
+					print "~eval| out_data('%s');" % json.dumps(ts_list)
 				else:	print "~eval|document.myForm.org_inn.value=0; alert('У организации ИНН: %s \\nНет АКТИВНЫХ транспортных средств!');" % request.get('org_inn')
 			elif shstat == 'view_canvas':
 				ts_list = rt.get_ts(request)
@@ -87,6 +87,7 @@ def     check ():
 			elif shstat == 'view_trace':		# in ['view_trace', 'set_opts']:
 				print '~log|', request
 				rt.view_trace (request)
+			#	print "~eval| get_tansport();"
 			elif shstat == 'set_opts':
 				print '~log|', request
 				print "ZZZ"

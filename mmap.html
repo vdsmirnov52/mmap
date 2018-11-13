@@ -89,12 +89,12 @@ function	config_ts () {	set_shadow('view_ts_config')	}
 		<div class=""><div class="p-1" id='last_time' > &nbsp;&nbsp;&nbsp;&nbsp; </div> </div>			
 
 		<div id='head_CC' class="col">
-			<span id='load_ts' class='asbutton' onclick="set_shadow ('get_tansport');">
+			<span id='load_ts' class='asbutton' onclick="set_shadow ('get_transport');">
 				<i class="fa fa-refresh fa-lg" aria-hidden="true"></i>
 				<span class="button-text">Обновить ТС</span>
 			</span>
-			<span id='reload_ts' class='asbutton' onclick="reload_ts();">
-				<span id='updating_ts' class="button-text"> <i class="fa fa-refresh fa-lg" aria-hidden="true" title="Обновлять данные"></i> </span>
+			<span id='updating_ts' class='asbutton' onclick="reload_ts();">
+				<i class="fa fa-refresh fa-lg" aria-hidden="true" title="Обновлять данные"></i>
 			</span>
 		</div>
 		<!--div id='head_YY' class="">
@@ -111,7 +111,7 @@ function	config_ts () {	set_shadow('view_ts_config')	}
 	<tr>
 	<td id='head_AA'><div id='view_gz' class='asbutton' onclick="set_shadow ('view_gzones');"> Зоны обслуживания </div></td>
 	<td id='head_BB'><div id='set_org' class='asbutton' onclick="set_shadow ('set_organizations');"> Выбор организации </div></td>
-	<td id='head_CC'><div id='load_ts' class='asbutton' onclick="set_shadow ('get_tansport');"> Обновить ТС </div></td>
+	<td id='head_CC'><div id='load_ts' class='asbutton' onclick="set_shadow ('get_transport');"> Обновить ТС </div></td>
 	<td id='head_DD'><div id='clear_ts' class='asbutton' onclick="clear_ts_list();"> Очистить </div></td>
 	<!--td><div id='test' class='asbutton' onclick="alert('mymap.getZoom: ' +mymap.getZoom());"> &copy; </div></td-->
 	<!--td><div id='test' class='asbutton' onclick="alert('mymap.getZoom: ' +document.myForm.org_inn.value);" > &copy; </div></td-->
