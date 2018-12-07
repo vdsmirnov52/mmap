@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+	<title>ATP NN</title>
+	<link rel="stylesheet" href="/js/leaflet/leaflet.css"	crossorigin="" />
+	<link rel="icon" href="/img/favicon.png" type="image/png"/>
+	<script src="/js/leaflet/leaflet.js" crossorigin=""></script>
+	<script src="/js/leaflet/proj4.js"></script>
+	<script src="/js/leaflet/proj4leaflet.js"></script>
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<!--[if lte IE 8]><link rel="stylesheet" href="http://leaflet.cloudmade.com/dist/leaflet.ie.css" /><![endif]-->
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<script src="http://openweathermap.org/js/leaflet-layer.js"></script>
+	<script src="http://api-maps.yandex.ru/2.0/?load=package.map&lang=ru-RU" type="text/javascript"></script>
+	<script src="/js/layer/tile/Yandex.js"></script>
+	<!-- Chart	
+	<script src="/js/chart/Chart.bundle.js"></script -->
+	<script type='text/javascript' src='/jq/jquery.onajax_answer.js'></script>
+	<script type='text/javascript' src='/jq/jquery.js'></script>
+
+	<link rel='stylesheet' type='text/css' href='/css/atp.css' />
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+	<link rel='stylesheet' type='text/css' href='/css/font-awesome/css/font-awesome.min.css' />
+	<script type='text/javascript' src='/js/atp/document_ready.js'></script>
+	<script type='text/javascript' src='/js/atp/bymaps.js'></script>
+
+<script type="text/javascript">
+///////////////////////////////////////////////////
+
+function	list_ts () {	set_shadow('view_ts_list')	}
+function	config_ts () {	set_shadow('view_ts_config')	}
+///////////////////////////////////////////////////
+</script>
+</head>
+<body>
+<form name='myForm' action='http://212.193.103.21/tmp/atp.html' method='post'>
+	<fieldset class='hidd'>
+	<input id='view_gosnum' name='view_gosnum' type='hidden' value='off' />
+	<input name='cod_region' type='hidden' value='' />
+	<input name='org_inn' type='hidden' value='0' />
+	<input name='bm_ssys' type='hidden' value='131072' />
+	<input name='snow_stat' type='hidden' value='' />
+	<input name='snow_flag' type='hidden' value='' />
+	</fieldset>
+	
+	<span class="line btn btn-info" style="position: absolute; z-index: 1111; margin: 6pt; left: 50pt; opacity: 0.8; font-weight: bold;" onclick="set_shadow ('view_gosnum');"> Гос.&#8470;</span>
+	<span class="line btn btn-info" style="position: absolute; z-index: 1111; margin: 6pt; left: 110pt; opacity: 0.8; font-weight: bold;" onclick="set_shadow ('view_trace');">
+		<i class="fa fa-flag-checkered fa-lg" aria-hidden="true"></i> </span>
+	<span class='line btn btn-info' id='updating_ts' style="position: absolute; z-index: 1111; margin: 6pt; left: 150pt; opacity: 0.8; font-weight: bold;" onclick="reload_ts();">
+		<i class="fa fa-refresh fa-lg" aria-hidden="true" title="Обновлять данные"></i> 
+	</span>
+
+	<div id="map" style="min-width: 300px; min-height: 300px; max-width: 2100px; height: 800px; border: thin solid #668;"></div>
+
+	<div id='widget' type='hidden' style=''></div> 
+	</form>
+	<!--div id='log' style="height: 30px; overflow: auto">'log'</div-->
+</body>
+</html>

@@ -64,7 +64,7 @@ def	get_ts (request):
 #img_close = """<img onclick="$('#widget').html('')" src="../img/delt2.png" >"""	#<img src="../img/delt2.png" ><img src="../img/delt2.png" >"""
 #img_close = """<i class="fa fa-refresh" aria-hidden="true" onclick="$('#widget').html('')"></i>"""
 #img_close = """<i class="fa fa-window-close" aria-hidden="true" onclick="$('#widget').html('')"></i>&nbsp;"""
-img_close = """<i class="fa fa-times" aria-hidden="true" onclick="$('#widget').html('')"></i>&nbsp;"""
+img_close = """<i class="fa fa-times fa-lg" aria-hidden="true" onclick="$('#widget').html('')"></i>&nbsp;"""
 
 def	view_gzones (request):
 	peg_nn = { 1: 'Автозаводский', 2: 'Канавинский', 3: 'Ленинский', 4: 'Московский', 5: 'Нижегородский', 6: 'Приокский', 7: 'Советский', 8: 'Сормовский', 9: 'Северний', }
@@ -287,7 +287,7 @@ def	update_recv_ts (request):
 	dbcntr = dbtools.dbtools('host=212.193.103.20 dbname=contracts port=5432 user=smirnov')
 	dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
 	query = "SELECT id_ts, gosnum, marka, a.device_id, inn FROM transports t, organizations o, atts a WHERE o.bm_ssys=131072 AND t.id_org = o.id_org AND id_ts = autos AND a.last_date > '%s' ORDER BY o.id_org;" % time.strftime("%Y-%m-%d 00:00:00", time.localtime (time.time ()))
-#	print query
+	print query
 	rows = dbcntr.get_rows (query)
 	if not rows:
 		print query
@@ -299,13 +299,16 @@ def	update_recv_ts (request):
 			continue
 		rr = dbi.get_row ("SELECT gosnum, device_id, inn FROM recv_ts WHERE gosnum = '%s' OR device_id = %s" % (gosnum, device_id))
 		if rr:
-			if device_id < 0 and gosnum == g :		continue 
 			g, d, i = rr
+			if device_id < 0 and gosnum == g :		continue 
 			if gosnum == g and device_id == d and inn == i:	continue
-			print g, d, i, '!=\t', 
-		else:
-			query = "INSERT INTO recv_ts (idd, inn, gosnum, marka, device_id, stat_ts) VALUES ('idd%s', %s, '%s', '%s', %s, 0)" % (device_id, inn, gosnum, marka, device_id)
+			print g, d, i, '!=\t'
+			query = "DELETE FROM recv_ts WHERE gosnum = '%s' OR device_id = %s" % (gosnum, device_id)
 			print query, dbi.qexecute (query)
+	#		continue 
+	#	else:
+		query = "INSERT INTO recv_ts (idd, inn, gosnum, marka, device_id, stat_ts) VALUES ('idd%s', %s, '%s', '%s', %s, 0)" % (device_id, inn, gosnum, marka, device_id)
+		print query, dbi.qexecute (query)
 	#	print id_ts, gosnum, marka, device_id, inn, '<br>'
 	print "UPDATE org_desc SET count_ts",	dbi.qexecute ("UPDATE org_desc SET count_ts = (SELECT count(*) FROM recv_ts WHERE org_desc.inn = recv_ts.inn);")
 
@@ -313,17 +316,20 @@ def	check_autos (request):
 	# wffront
 	currtm = int(time.time())
 	print	request.get('bm_ssys'), request.get('org_inn')
-	sout = ["""<div class="wffront" style="width: 550px; max-width: 90%%; min-height: 550px; left: 500px; ">
+	sout = ["""<div class="wffront" style="width: 560px; max-width: 90%%; min-height: 550px; left: 800px; ">
 	<div class='list-group-item list-group-item-action active'><span class='tit'>Транспорт</span><span class="float-right">%s</span></div> """ % img_close]
 	sout.append("""<ul class='list-group'>""")
 	sout.append("<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center'>")
 	sout.append("""<input type='button' class='butt' onclick="set_shadow ('update_recv_ts');" value='Обновить списки ТС' />	""")
 	categ_ts = request.get('categ_ts')
+	sout.append ("""<span>Категория ТС:<select class='select' name='categ_ts' onchange="if (document.myForm.org_inn.value != '') set_shadow('check_autos');">""")
 	if categ_ts == '1':
-		sout.append("""<span>Категория ТС:<select class='select' name='categ_ts'><option value=''> </option><option value='1' selected> 1 </option><option value='2'> 2 </option></select></span>""")
+		sout.append("""<option value=''> </option><option value='1' selected> 1 </option><option value='2'> 2 </option><option value='X'> X </option></select></span>""")
 	elif categ_ts == '2':
-		sout.append("""<span>Категория ТС:<select class='select' name='categ_ts'><option value=''> </option><option value='1'> 1 </option><option value='2' selected> 2 </option></select></span>""")
-	else:	sout.append("""<span>Категория ТС:<select class='select' name='categ_ts'><option value=''> </option><option value='1'> 1 </option><option value='2'> 2 </option></select></span>""")
+		sout.append("""<option value=''> </option><option value='1'> 1 </option><option value='2' selected> 2 </option><option value='X'> X </option></select></span>""")
+	elif categ_ts == 'X':
+		sout.append("""<option value=''> </option><option value='1'> 1 </option><option value='2'> 2 </option><option value='X' selected> X </option></select></span>""")
+	else:	sout.append("""<option value=''> </option><option value='1'> 1 </option><option value='2'> 2 </option><option value='X'> X </option></select></span>""")
 #	sout.append ("#"*22 +'<br>')
 
 	sout.append("</li>")
@@ -351,6 +357,8 @@ def	check_autos (request):
 			query = "SELECT gosnum, marka, device_id, stat_ts FROM recv_ts WHERE inn = %s AND stat_ts = %s" % (org_inn, categ_ts)
 		elif categ_ts == '2':
 			query = "SELECT gosnum, marka, device_id, stat_ts FROM recv_ts WHERE inn = %s AND stat_ts = %s" % (org_inn, categ_ts)
+		elif categ_ts == 'X':
+			query = "SELECT gosnum, marka, device_id, stat_ts FROM recv_ts WHERE inn = %s AND stat_ts > 0" % org_inn
 		else:	query = "SELECT gosnum, marka, device_id, stat_ts FROM recv_ts WHERE inn = %s" % org_inn
 		print query
 		ts_list = dbi.get_rows (query)
@@ -450,16 +458,6 @@ def	snow_zone (request):
 	request['cod_region'] = 1+znames.index(zn)
 	print request
 	return	out_streets (request, scateg = 'ALL')
-	'''
-		if request.has_key('zone_name'):
-			fdata = r"/home/smirnov/MyTests/Wialon/data/" + request['zone_name']
-		else:
-		#	fdata = r"/home/smirnov/MyTests/Wialon/data/roads.json"		# EPSG:3857
-			fdata =	r"/home/smirnov/MyTests/Wialon/data/Нижегородский.txt"
-		f = open (fdata, 'r')
-		data = f.read()
-		print "~eval| clear_map_object (list_streets);  list_streets [1]= new L.Proj.geoJson(%s).addTo(mymap);" % data  # EPSG:3857
-	'''
 
 def	table_mask ():
 	dbasnow = dbtools.dbtools('host=127.0.0.1 dbname=anti_snow port=5432 user=smirnov')
@@ -586,7 +584,7 @@ def	snow_opts (request):
 	elif request['shstat'] == 'snow_opts':
 		dbasnow = dbtools.dbtools('host=127.0.0.1 dbname=anti_snow port=5432 user=smirnov')
 		conf = mask.get_config()
-		print "~widget|<div class='wffront' style='width:500px; max-width: 90%; left: 900px;'>"
+		print "~widget|<div class='wffront' style='width:540px; max-width: 90%; left: 900px;'>"
 		print """<div class='list-group-item list-group-item-action active'><span class='tit'>Параметры:</span><span class="float-right">%s</span></div>""" % img_close
 	
 		print """<ul class='list-group'>"""
@@ -595,6 +593,26 @@ def	snow_opts (request):
 			Как идет уборка</span><span class="badge badge-light badge-pill">
 			<select name='set_snow_flag' class='ssel' onchange="set_shadow('snow_opts');">
 			<option value='0'> Нет </option><option value='1'> Да </option><option value='2'> Сильный </option></select> </span></li>"""
+
+		if not os.environ['REMOTE_ADDR'] in ['10.10.2.40']:
+			print """<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center'><pre>"""
+			print	"%20s:" % 'REMOTE_ADDR', os.environ['REMOTE_ADDR']
+			for k in request.keys():	print	"%20s:" % k, request[k]
+			print	"</pre></li></ul></div>"
+			return
+		###	
+	#	print """<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center'>%s<span class="badge badge-light badge-pill">%s</span></li>""" % ('123456', 654321)
+		'''
+		for k in os.environ.keys():	print k	, os.environ[k]
+		if not os.environ['REMOTE_ADDR'] in ['10.10.2.40']:
+		'''
+		print """<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center'><pre style='font-size: 80%'>"""
+		print	'%8s:' % 'zone', conf.get('zone')
+		print	'%8s:' % 'ln_xy', conf.get('ln_xy')
+		print	'%8s:' % 'stp_xy', conf.get('stp_xy')
+		for k in ['des', 'max_speed', 'd_curs', 'debug']:	print	'%8s:' %k, conf.get(k),
+		print "</pre></li>"
+
 		print """<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center'>Статус маски<span class="badge badge-light badge-pill">
 			<select name='set_snow_stat' class='ssel' onchange="document.myForm.snow_stat.value = document.myForm.set_snow_stat.value;">
 			<option value=''> None </option> <option value='AND stat = 0'> stat = 0 </option> <option value='AND stat >= 0'> stat >= 0 </option>
@@ -605,12 +623,7 @@ def	snow_opts (request):
 			<option value='AND categ > 2'> categ Прочие </option>
 			<option value='AND categ IS NULL'> categ IS NULL </option>
 			</select></span></li>"""
-	#	print """<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center'>%s<span class="badge badge-light badge-pill">%s</span></li>""" % ('123456', 654321)
-		print """<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center'>"""
-		print "<pre style='font-size: 80%'>"
-		for k in conf.keys():	print	'%7s:' %k, conf[k]	#, "<br>"
-		print "</pre>"
-		print "</li>"
+
 		print """<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center active'>Выбор района города
 			<span class="badge badge-light badge-pill" onclick="clear_map_object (list_streets);">Очистить</span></li>"""
 		print """<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center'> <ul>
@@ -652,24 +665,72 @@ def	snow_opts (request):
 			drow = dbasnow.get_dict("SELECT * FROM snow_opts WHERE oname = 'snow_flag'")
 			if snow_flag != drow['ival']:
 				query = "UPDATE snow_opts SET ival = %s, change_tm = %s WHERE oname = 'snow_flag'" % (snow_flag, int(time.time()))
-				print query, dbasnow.qexecute(query)
+				print '~log|', query, dbasnow.qexecute(query)
 			else:	snow_flag = drow['ival']
 		print "~eval|document.myForm.set_snow_flag.value='%s';" % snow_flag
 	else:	return
 	return
+###
+def	select_org (org_inn, bm_ssys, sshadow):
+	sout = []
+	sout.append (""" Организация:
+	<select class='select' name='set_inn' onchange="document.myForm.org_inn.value=document.myForm.set_inn.value; set_shadow('%s');" > <option value=0>  </option>
+	""" % sshadow)
+	orgs_list = get_olist (bm_ssys)
+	for inn in orgs_list.keys():
+		if str(inn) == org_inn:
+			sout.append ("<option value=%s selected > %s </option>" % (inn, orgs_list[inn][0]))
+		else:	sout.append ("<option value=%s> %s </option>" % (inn, orgs_list[inn][0]))
+	sout.append ("</select>")
+	return	sout
+
 
 def	view_streets (request):
+	#	select id_dp, gosnum, max(st) FROM vdata_pos GROUP BY id_dp;
+	#	receiver=# select gosnum, max(st) FROM vdata_pos GROUP BY gosnum;
+	import	rnic_wtranport as rwt
+
+#	dbc = dbtools.dbtools('host=212.193.103.20 dbname=contracts port=5432 user=smirnov')
+	
+	org_inn = request.get('org_inn')
+	bm_ssys = request.get('bm_ssys')
+	sel_org  = select_org (org_inn, bm_ssys, 'set_opts')
+	and_opts = [
+		('AND last_date IS NOT NULL','Передавали данные'), ('AND last_date IS NULL','Нет данных'),
+		('AND last_date IS NOT NULL AND bm_wtime & 7 = 0','Нет сегодня'), ('AND last_date IS NOT NULL AND bm_wtime = 0','Нет 10 дней'),
+		('quality', 'Сомнительное качество'),
+		]
+	sel_and	= [
+		""" AND:<select class='select' name='set_and' onchange="document.myForm.org_inn.value=document.myForm.set_inn.value; set_shadow('set_opts');" > <option value=''>  </option>""",
+	]
+	jand = request.get('set_and')
+	if not jand:	jand = ''
+	for v,t in and_opts:
+		if jand == v:
+			sel_and.append ("<option value='%s' selected> %s </option>" % (v,t))
+		else:	sel_and.append ("<option value='%s'> %s </option>" % (v,t))
+	sel_and.append ("</select>")
+	xls = """<a href='http://212.193.103.21/tmp/example.xls'><i class='fa fa-table fa-lg' aria-hidden='true' style='color: #fff;' title='XLS'></i></a>"""
+
+	print "~widget|<div class='wffront' style='width:90%; max-width: 99%; left: 120px;'>"
+	print """<div class='list-group-item list-group-item-action active'><span class='tit'>%s &nbsp;&nbsp;&nbsp; </span><span class="float-center"> %s &nbsp; %s </span><span class="float-right"> %s &nbsp; %s </span></div>""" % (
+		"Состояние транспорта", '\n'.join(sel_org), '\n'.join(sel_and), xls, img_close)
+
+	rwt.view_wtranport (org_inn, bm_ssys, sel_org, jand)
+	print "</div>"
+	return
+
+	'''
 	fdata = r"/home/smirnov/MyTests/Wialon/data/roads.json"		# EPSG:3857
 #	fdata = r"/home/smirnov/MyTests/Wialon/data/EPSG.json"		# EPSG:3857 London
 #	fdata = r"/home/smirnov/MyTests/Wialon/data/exampls.json"	# WGS84
 	f = open (fdata, 'r')
 	data = f.read()
 #	print eval(data)
-	'''
-	'''
 #	print "~eval| geoLayer = new L.Proj.geoJson(%s).addTo(mymap);" % data	# EPSG:3857
 	print "~eval| clear_map_object (list_streets);	list_streets [1]= new L.Proj.geoJson(%s).addTo(mymap);" % data	# EPSG:3857
 #	print '~eval| geoLayer.addData (%s); ' % data				# WGS84
+	'''
 
 if __name__ == "__main__":
 	request = {'this': 'ajax', 'org_inn': '0', 'shstat': 'update_ts_list', 'leaflet-base-layers': 'on'} 

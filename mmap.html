@@ -63,11 +63,11 @@ function	config_ts () {	set_shadow('view_ts_config')	}
 			</div>
 		</div>
 		<div class="col">
-			<div class="asbutton" id="set_opts" onclick="set_shadow ('set_opts');">
-			<i class="fa fa-cog fa-lg" aria-hidden="true"></i>
-			<!--
+			<div class="asbutton" id="set_opts" onclick="set_shadow ('set_opts');" title="set_opts">
+			<i class="fa fa-bookmark-o fa-lg" aria-hidden="true"></i> РНИС
+			<!--i class="fa fa-cog fa-lg" aria-hidden="true"></i>
 			<i class="fa fa-flag-checkered fa-lg" aria-hidden="true"></i>
-			 Opts	-->
+			 Opts -->
 			</div>
 		</div>
 		<!--div >
@@ -107,19 +107,16 @@ function	config_ts () {	set_shadow('view_ts_config')	}
 	
 	<!--<div id='menu' style="min-width: 130px; max-width: 2100px; width: 100%; margin: 0px; padding: 0px;">-->
 	
-	<table style="width: 100%; padding: 0px; border-spacing: 0px; display: none">
+	<!--table style="width: 100%; padding: 0px; border-spacing: 0px; display: none">
 	<tr>
 	<td id='head_AA'><div id='view_gz' class='asbutton' onclick="set_shadow ('view_gzones');"> Зоны обслуживания </div></td>
 	<td id='head_BB'><div id='set_org' class='asbutton' onclick="set_shadow ('set_organizations');"> Выбор организации </div></td>
 	<td id='head_CC'><div id='load_ts' class='asbutton' onclick="set_shadow ('get_transport');"> Обновить ТС </div></td>
 	<td id='head_DD'><div id='clear_ts' class='asbutton' onclick="clear_ts_list();"> Очистить </div></td>
-	<!--td><div id='test' class='asbutton' onclick="alert('mymap.getZoom: ' +mymap.getZoom());"> &copy; </div></td-->
-	<!--td><div id='test' class='asbutton' onclick="alert('mymap.getZoom: ' +document.myForm.org_inn.value);" > &copy; </div></td-->
 	<td><div id='last_time' class='asbutton'> &nbsp;&nbsp;&nbsp;&nbsp; </div></td>
-	<!--td><div id='reload' class='asbutton' onclick="document.myForm.submit();" title="Обновить"><img src="../img/reload_w24.png"></div></td-->
 	<td><div id='reload' class='asbutton' onclick="set_shadow('submit');" title="Обновить"><img src="../img/reload_w24.png"></div></td>
 	</tr>
-	</table>
+	</table-->
 	<span class="line btn btn-info" style="position: absolute; z-index: 1111; margin: 6pt; left: 50pt; opacity: 0.8; font-weight: bold;" onclick="set_shadow ('view_gosnum');"> Гос.&#8470;</span>
 	<span class="line btn btn-info" style="position: absolute; z-index: 1111; margin: 6pt; left: 110pt; opacity: 0.8; font-weight: bold;" onclick="set_shadow ('view_trace');"> <i class="fa fa-flag-checkered fa-lg" aria-hidden="true"></i> </span>
 </div>	<!-- container-fluid	-->

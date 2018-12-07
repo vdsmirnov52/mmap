@@ -22,7 +22,7 @@ def     check ():
 		CPYSESSID = ''
 		# 'this': 'ajax', 'shstat': 'view_canvas'
 		if os.environ.has_key('HTTP_REFERER') and os.environ['REQUEST_METHOD'] == 'POST':
-			print '\n'
+			print """Content-Type: text/html; charset=utf-8;\n\n"""
 			referer = os.environ['HTTP_REFERER']
 			shstat = request.get('shstat')
 			import	recv_tools as rt
@@ -49,6 +49,8 @@ def     check ():
 				if ts_list:
 					print "~eval| out_data('%s');" % json.dumps(ts_list)
 				else:	print "~eval|document.myForm.org_inn.value=0; alert('У организации ИНН: %s \\nНет АКТИВНЫХ транспортных средств!');" % request.get('org_inn')
+			elif shstat == 'get_user_position':
+				print	"~eval|mymap.setView([56.32354, 43.99121], 14); function () {return 'OK';};  console.log('%s');" % str(request)
 			elif shstat == 'view_canvas':
 				ts_list = rt.get_ts(request)
 				if ts_list:
