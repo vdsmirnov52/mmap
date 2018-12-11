@@ -15,6 +15,34 @@ import	main_page
 
 import	json
 
+def	pres (res):
+
+	if type (res) == dict:		return	pdict (res)
+	elif type (res) == list:	return	plist (res)
+
+def	pdict (d):
+#	print d
+	dd = {}
+	for k in d.keys():
+		sk = k.encode('UTF-8')
+		if type (d[k]) == dict:		dd[sk] = pdict (d[k])
+		elif type (d[k]) == list:	dd[sk] = plist (d[k])
+		elif isinstance(d[k], basestring):
+			dd[sk] = d[k].encode('UTF-8')
+		else:	dd[sk] = d[k]
+	return	dd
+
+def	plist (l):
+#	print l
+	ll = []
+	for c in l:
+		if type (c) == dict:	ll.append(pdict(c))
+		elif type (c) == list:	ll.append(plist(c))
+		elif isinstance(c, basestring):
+			ll.append (c.encode('UTF-8'))
+		else: ll.append(c)
+	return	ll
+
 def     check ():
 	try:
 		request = cglob.get_theform ()
@@ -25,6 +53,17 @@ def     check ():
 			print """Content-Type: text/html; charset=utf-8;\n\n"""
 			referer = os.environ['HTTP_REFERER']
 			shstat = request.get('shstat')
+			'''
+			### NimBus
+			if shstat == 'nimbus':
+				import	nimbus
+			#	cmnd = 'depot/128/stop/20423/panel'
+				cmnd = request.get('cmd')
+				res = nimbus.api_nimbus(cmnd, "Token 30e04452062e435a9b48740f19d56f45")
+				print	res
+				return
+			'''
+
 			import	recv_tools as rt
 			print time.strftime("~last_time|%T", time.localtime(time.time()))
 
@@ -49,8 +88,17 @@ def     check ():
 				if ts_list:
 					print "~eval| out_data('%s');" % json.dumps(ts_list)
 				else:	print "~eval|document.myForm.org_inn.value=0; alert('У организации ИНН: %s \\nНет АКТИВНЫХ транспортных средств!');" % request.get('org_inn')
-			elif shstat == 'get_user_position':
-				print	"~eval|mymap.setView([56.32354, 43.99121], 14); function () {return 'OK';};  console.log('%s');" % str(request)
+			### NimBus
+			elif shstat == 'set_user_position':
+				#set_shadow ('get_user_position&xpos=55.11&ypos=22.33');
+				xpos = request.get('xpos')
+				ypos = request.get('ypos')
+				lev = request.get('level')
+				if lev:	#	lev = 12
+					print	"""~eval|mymap.setView([%s, %s], %s); var marker = L.marker([%s, %s]).addTo(mymap).bindPopup('A pretty CSS3 popup.<br> и текст по Русски.').openPopup(); """ % (ypos, xpos, lev, ypos, xpos)
+				else:
+					print	"""~eval|mymap.setView([%s, %s]); var marker = L.marker([%s, %s]).addTo(mymap).bindPopup('A pretty CSS3 popup.<br> и текст по Русски.').openPopup(); """ % (ypos, xpos, ypos, xpos)
+
 			elif shstat == 'view_canvas':
 				ts_list = rt.get_ts(request)
 				if ts_list:
@@ -112,7 +160,31 @@ def     check ():
 			else:	pass
 			'''
 			sys.exit()
-		else:	print '\n\n', request, os.environ['REQUEST_METHOD']
+		elif os.environ['REQUEST_METHOD'] == 'GET':
+			print """Content-Type: text/html; charset=utf-8;\n\n"""
+			shstat = request.get('shstat')
+			### NimBus
+			if shstat == 'nimbus':
+				import	nimbus
+			#	cmnd = 'depot/128/stop/20423/panel'
+				cmnd = request.get('cmd')
+				res = nimbus.api_nimbus(cmnd, "Token 30e04452062e435a9b48740f19d56f45")
+				print json.dumps(pres (res))
+				'''
+				print	str(res)
+				sres = str(res)
+				sss = ''
+				j = 0
+				print  "<pre>"	#.encode('UTF-8')
+				print type(res)	#,encode('UTF-8')
+				while j == 0:
+					j = sres.find ("u'\\u", j)
+					print j, print sres[j:]
+				print  "</pre>"	#.encode('UTF-8')
+				'''
+
+				return
+		else:	print '\n\n request:', request, os.environ['REQUEST_METHOD']
 		'''
 		elif request.has_key('this') and request['this'] == 'new_widow':
 			print """Content-Type: text/html; charset=utf-8\n\n<!DOCTYPE HTML>\n<html>"""
