@@ -9,9 +9,42 @@ sys.path.insert(0, LIBRARY_DIR)
 
 import  dbtools
 
+ACTIV_ROUTES = []
+def	get_route (idd):
+	if not idd.isdigit():	return "ZZZ %s" % idd
+	idd = int(idd)
+	if ACTIV_ROUTES:
+		for r in ACTIV_ROUTES:
+			for u in r['u']:
+				if u == idd:
+					return	r['m']
+		return "Неизвестен"	# % idd
+	import	nimbus
+	try:
+		token = 'Token 30e04452062e435a9b48740f19d56f45'
+		cmnd = 'depot/128/routes'
+		res = nimbus.u8api_nimbus (cmnd, token)
+		print res.keys()
+		routes = res.get ('routes')
+		for r in routes:
+			if not r['u']:	continue
+		#	d = {'m': "%s %s %s" % (r['id'], r['n'], r['d']), 'u': r['u']}
+		#	ACTIV_ROUTES.append ({'m': "%s %s %s" % (r['id'], r['n'], r['d']), 'u': r['u']})
+			ACTIV_ROUTES.append ({'m': "%s %s" % (r['n'], r['d']), 'u': r['u']})
+		print len(routes)
+		return	get_route (idd)
+	except:	return "except: nimbus"
+	
 
 def	get_ts (request):
 	""" Читать транспорт по ИНН	"""
+	HTTP_REFERER = os.environ.get('HTTP_REFERER')
+	if 'atp.html' in HTTP_REFERER:
+		check_route = True
+	#	print HTTP_REFERER
+	else:	check_route = False
+#	print	get_route (679)
+
 	# CREATE  VIEW vlast_pos AS SELECT p.*, t.idd AS code, t.inn AS tinn, gosnum, marka, t.rem, bname FROM last_pos p INNER JOIN recv_ts t ON p.ida = t.device_id INNER JOIN org_desc o ON t.inn = o.inn;
 	dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
 
@@ -48,12 +81,16 @@ def	get_ts (request):
 		#	opts = {'icon': icon, 'gosnum': "<b> %s </b>" % r[d.index('gosnum')], 'dt': '%s' % time.strftime('%T %d-%m-%Y', time.localtime(r[d.index('t')]))}
 			opts = {'icon': icon, 'gosnum': "<b> %s </b>" % r[d.index('gosnum')], 'dt': '%s' % str_time (r[d.index('t')], jtm).replace("'", '')}
 			if r[d.index('bname')] and r[d.index('bname')] != '':
-				opts['bn'] = "<span class=bfligt>%s </span><br />" % r[d.index('bname')].replace('"', " ")
+				if check_route:
+					opts['bn'] = "Маршрут: <span class=tit>%s </span><br />" % get_route(r[d.index('code')])	#HTTP_REFERER
+				else:	opts['bn'] = "<span class=bfligt>%s </span><br />" % r[d.index('bname')].replace('"', " ")
 			if r[d.index('sp')] and r[d.index('sp')] > 0:
 				opts['sp'] = ' &nbsp; v:%dкм/ч' % r[d.index('sp')]
 			else:	opts['sp'] = ' &nbsp; <span class=bferr>Стоит</span>'
 			ddd.append([[float(r[d.index('y')]), float(r[d.index('x')])], opts])
 		else:
+			if check_route:
+				get_route(r[d.index('idd')])
 			if r[d.index('bname')] and r[d.index('bname')] != '':
 				gosnum += '<br><b>%s</b>' % r[d.index('bname')].replace('"', " ")
 			if r[d.index('marka')]:	gosnum += '<br>' +r[d.index('marka')]
@@ -286,16 +323,45 @@ def	set_organizations (request):
 def	update_recv_ts (request):
 	dbcntr = dbtools.dbtools('host=212.193.103.20 dbname=contracts port=5432 user=smirnov')
 	dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
-	query = "SELECT id_ts, gosnum, marka, a.device_id, inn FROM transports t, organizations o, atts a WHERE o.bm_ssys=131072 AND t.id_org = o.id_org AND id_ts = autos AND a.last_date > '%s' ORDER BY o.id_org;" % time.strftime("%Y-%m-%d 00:00:00", time.localtime (time.time ()))
+	org_inn = request.get('org_inn')
+	if org_inn and org_inn.isdigit() and int(org_inn) > 0:
+		swhere = "inn = %s" % org_inn
+	else:
+		bm_ssys = request.get('bm_ssys')
+		swhere = "o.bm_ssys=131072"
+		if bm_ssys and bm_ssys.isdigit() and int(bm_ssys) > 0:
+			rs = dbi.get_rows ("SELECT inn FROM org_desc WHERE bm_ssys = %s;" % bm_ssys)
+			if rs:
+				inns = []
+				for r in rs:	inns.append(str(r[0]))
+				swhere = "inn IN (%s)" % ', '.join(inns)
+	query = "SELECT id_ts, gosnum, marka, a.device_id, inn, uin FROM transports t, organizations o, atts a WHERE %s AND t.id_org = o.id_org AND id_ts = autos AND a.last_date > '%s' ORDER BY o.id_org;" % (
+		swhere, time.strftime("%Y-%m-%d 00:00:00", time.localtime (time.time ())))
 	print query
+	'''
+	return
+	### ДТ НН
+#	query = "SELECT id_ts, gosnum, marka, a.device_id, inn, uin FROM transports t, organizations o, atts a WHERE o.bm_ssys=131072 AND t.id_org = o.id_org AND id_ts = autos AND a.last_date > '%s' ORDER BY o.id_org;" % time.strftime("%Y-%m-%d 00:00:00", time.localtime (time.time ()))
+	'''
 	rows = dbcntr.get_rows (query)
 	if not rows:
 		print query
 		return
 	for r in rows:
-		id_ts, gosnum, marka, device_id, inn = r
+		id_ts, gosnum, marka, device_id, inn, uin = r
+		if marka:
+			marka = "'%s'" % marka
+		else:	marka = "NULL"
 		if device_id < 0:
-#			print "W\t", id_ts, gosnum, marka, device_id, inn
+#			print "WWW\t", id_ts, gosnum, marka, device_id, inn
+			rw = dbi.get_row ("SELECT gosnum, device_id, inn FROM recv_ts WHERE gosnum = '%s' OR device_id = %s" % (gosnum, uin))
+			if rw:
+				g, d, i = rw
+				if gosnum == g and uin == d and inn == i:
+					print "Wialon\t", id_ts, gosnum, marka, device_id, inn
+			else:
+				query = "INSERT INTO recv_ts (idd, inn, gosnum, marka, device_id, stat_ts) VALUES ('idd%s', %s, '%s', %s, %s, 0)" % (uin, inn, gosnum, marka, uin)
+				print "Wialon\t", query, dbi.qexecute (query)
 			continue
 		rr = dbi.get_row ("SELECT gosnum, device_id, inn FROM recv_ts WHERE gosnum = '%s' OR device_id = %s" % (gosnum, device_id))
 		if rr:
@@ -307,7 +373,7 @@ def	update_recv_ts (request):
 			print query, dbi.qexecute (query)
 	#		continue 
 	#	else:
-		query = "INSERT INTO recv_ts (idd, inn, gosnum, marka, device_id, stat_ts) VALUES ('idd%s', %s, '%s', '%s', %s, 0)" % (device_id, inn, gosnum, marka, device_id)
+		query = "INSERT INTO recv_ts (idd, inn, gosnum, marka, device_id, stat_ts) VALUES ('idd%s', %s, '%s', %s, %s, 0)" % (device_id, inn, gosnum, marka, device_id)
 		print query, dbi.qexecute (query)
 	#	print id_ts, gosnum, marka, device_id, inn, '<br>'
 	print "UPDATE org_desc SET count_ts",	dbi.qexecute ("UPDATE org_desc SET count_ts = (SELECT count(*) FROM recv_ts WHERE org_desc.inn = recv_ts.inn);")
@@ -732,7 +798,30 @@ def	view_streets (request):
 #	print '~eval| geoLayer.addData (%s); ' % data				# WGS84
 	'''
 
+bus_wialon = [
+	(353218079413564, 644), (351555060040902, 711), (863591026155659, 1015), (353218079413051, 679), (351555060044862, 677), (351555060041124, 714), (351555060045182, 821),
+	(351555060041157, 698), (351555060041033, 652), (351555060045455, 893), (355217047495263, 754), (353218079412475, 817), (863591026159974, 1013), (351555060031117, 820),
+	(351555060045406, 822), (351555060045158, 696), (351555060040811, 674), (351555060044565, 818), (353218079118122, 782), (351555060044201, 1048), (863591026169668, 1068),
+	(353218079422672, 643), (351555060025960, 705), (353218079117678, 675), (863591026147730, 1070), (91395, 702), (351555060030994, 755), (351555060038559, 703),
+	(355217047488664, 710), (351555060044656, 650), (863591026088173, 1016), (351555060044623, 651), (351555060045380, 667), (863591026080808, 1014), (351555060043815, 692),
+	(351555060041538, 783), (351555060044284, 656), (353218079413804, 676), (351555060045018, 695), (863591026087829, 1069), (355217047500740, 671), (351555060040985, 713),
+	(351555060045372, 683), (355217047496220, 678), (351555060045281, 709), (351555060043591, 670), (351555060045265, 655), (351555060045331, 751), (351555060041199, 697),
+	(351555060044896, 694), (351555060040894, 780), (351555060043831, 666), (351555060041702, 686), (355217047498275, 706), (351555060045208, 707), (351555060040977, 642),
+	(355217047495628, 681), (351555060044532, 654), (355217047501177, 748), (351555060044276, 781), (355217047495487, 757), (351555060045463, 645), (351555060035696, 699),
+	(351555060040852, 669), (110225, 689), (351555060044722, 693), (351555060043559, 664), (109615, 715), (355217047501540, 749), (355217047495719, 673),
+	(353218079118221, 688), (353218079412459, 665), (351555060044144, 752), (351555060044763, 685), (351555060043310, 646), (355217047497046, 680), (351555060044268, 649),
+	(351555060044540, 647), (355217047486338, 753), (351555060044813, 653), (351555060041231, 701), (351555060045083, 648), (353218079413549, 690), (351555060041587, 756),
+	(351555060043740, 712),
+	]
+
 if __name__ == "__main__":
 	request = {'this': 'ajax', 'org_inn': '0', 'shstat': 'update_ts_list', 'leaflet-base-layers': 'on'} 
 	print update_ts_list (request)
 	print get_olist()
+	'''
+	dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
+	for uin, did in bus_wialon:
+	#	print "SELECT * FROM recv_ts WHERE device_id = %s AND inn = 5246034418;" % uin	#, did
+		query = "UPDATE recv_ts SET idd = '%s' WHERE device_id = %s AND inn = 5246034418;" % (did, uin)
+		print query, dbi.qexecute(query)
+	'''

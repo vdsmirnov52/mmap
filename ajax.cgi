@@ -16,7 +16,7 @@ import	main_page
 import	json
 
 def	pres (res):
-
+	""" Конвертировать json из encode в UTF-8 (pdict (dict), plist (list))	"""
 	if type (res) == dict:		return	pdict (res)
 	elif type (res) == list:	return	plist (res)
 
@@ -54,26 +54,24 @@ def     check ():
 			referer = os.environ['HTTP_REFERER']
 			shstat = request.get('shstat')
 			'''
-			### NimBus
-			if shstat == 'nimbus':
-				import	nimbus
-			#	cmnd = 'depot/128/stop/20423/panel'
-				cmnd = request.get('cmd')
-				res = nimbus.api_nimbus(cmnd, "Token 30e04452062e435a9b48740f19d56f45")
-				print	res
-				return
 			'''
-
 			import	recv_tools as rt
 			print time.strftime("~last_time|%T", time.localtime(time.time()))
+			print "~log|", request
 
 	#		if 'temp.html' in referer:	print "~eval| msg('shstat: %s')" % shstat
 			if shstat == 'GET':
 		#		print "~eval| msg('GET')"
-				get_inn = request.get('get_inn').strip()
+				bm_ssys = request.get('bm_ssys')	### Выбор подсистемы bm_ssys
+				if bm_ssys and type(bm_ssys) == list:
+					bm_ssys = bm_ssys[0]
+					print "~eval| document.myForm.bm_ssys.value=%s;" % bm_ssys
+				'''
+				'''
+				get_inn = request.get('get_inn')
 				if get_inn and get_inn.isdigit():
-						rt.set_place(get_inn)
-						print "~eval|document.myForm.org_inn.value=%s; $('#widget').html(''); set_shadow ('get_transport');" % get_inn
+					rt.set_place(get_inn)
+					print "~eval|document.myForm.org_inn.value=%s; $('#widget').html(''); set_shadow ('get_transport');" % get_inn
 				sys.exit()
 
 			if shstat == 'submit':
@@ -94,10 +92,10 @@ def     check ():
 				xpos = request.get('xpos')
 				ypos = request.get('ypos')
 				lev = request.get('level')
-				if lev:	#	lev = 12
-					print	"""~eval|mymap.setView([%s, %s], %s); var marker = L.marker([%s, %s]).addTo(mymap).bindPopup('A pretty CSS3 popup.<br> и текст по Русски.').openPopup(); """ % (ypos, xpos, lev, ypos, xpos)
+				if lev:				# lev = 12
+					print	"""~eval|mymap.setView([%s, %s], %s); user_position = L.marker([%s, %s]).addTo(mymap).bindPopup('Текущее местоположение.').openPopup(); """ % (ypos, xpos, lev, ypos, xpos)
 				else:
-					print	"""~eval|mymap.setView([%s, %s]); var marker = L.marker([%s, %s]).addTo(mymap).bindPopup('A pretty CSS3 popup.<br> и текст по Русски.').openPopup(); """ % (ypos, xpos, ypos, xpos)
+					print	"""~eval|mymap.setView([%s, %s]); user_position = L.marker([%s, %s]).addTo(mymap).bindPopup('Текущее местоположение.').openPopup(); """ % (ypos, xpos, ypos, xpos)
 
 			elif shstat == 'view_canvas':
 				ts_list = rt.get_ts(request)
@@ -184,8 +182,9 @@ def     check ():
 				'''
 
 				return
-		else:	print '\n\n request:', request, os.environ['REQUEST_METHOD']
+		else:	print '\n\n :', os.environ['REQUEST_METHOD']
 		'''
+		else:	print '\n\n request:', request, os.environ['REQUEST_METHOD']
 		elif request.has_key('this') and request['this'] == 'new_widow':
 			print """Content-Type: text/html; charset=utf-8\n\n<!DOCTYPE HTML>\n<html>"""
 	#		cglob.ppobj(dict(os.environ))
