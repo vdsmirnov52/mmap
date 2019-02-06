@@ -11,8 +11,12 @@ import  dbtools
 
 ACTIV_ROUTES = []
 def	get_route (idd):
-	if not idd.isdigit():	return "ZZZ %s" % idd
-	idd = int(idd)
+	global	ACTIV_ROUTES
+	
+	if type(idd) == str:
+		if not idd.isdigit():	return "ZZZ %s" % idd
+		idd = int(idd)
+
 	if ACTIV_ROUTES:
 		for r in ACTIV_ROUTES:
 			for u in r['u']:
@@ -24,16 +28,16 @@ def	get_route (idd):
 		token = 'Token 30e04452062e435a9b48740f19d56f45'
 		cmnd = 'depot/128/routes'
 		res = nimbus.u8api_nimbus (cmnd, token)
-		print res.keys()
 		routes = res.get ('routes')
 		for r in routes:
-			if not r['u']:	continue
+			if not (r.has_key('u') and r['u']):	continue
 		#	d = {'m': "%s %s %s" % (r['id'], r['n'], r['d']), 'u': r['u']}
 		#	ACTIV_ROUTES.append ({'m': "%s %s %s" % (r['id'], r['n'], r['d']), 'u': r['u']})
-			ACTIV_ROUTES.append ({'m': "%s %s" % (r['n'], r['d']), 'u': r['u']})
-		print len(routes)
+		#	ACTIV_ROUTES.append ({'m': "%s %s" % (r['n'], r['d']), 'u': r['u']})
+			ACTIV_ROUTES.append ({'m': "%s" % r['n'], 'u': r['u'], 'st': r['st']})
+	#	print len(routes)
 		return	get_route (idd)
-	except:	return "except: nimbus"
+	except:	return "except"
 	
 
 def	get_ts (request):
@@ -82,7 +86,7 @@ def	get_ts (request):
 			opts = {'icon': icon, 'gosnum': "<b> %s </b>" % r[d.index('gosnum')], 'dt': '%s' % str_time (r[d.index('t')], jtm).replace("'", '')}
 			if r[d.index('bname')] and r[d.index('bname')] != '':
 				if check_route:
-					opts['bn'] = "Маршрут: <span class=tit>%s </span><br />" % get_route(r[d.index('code')])	#HTTP_REFERER
+					opts['bn'] = "№<span class=tit>&nbsp;%s </span>" % get_route(r[d.index('code')])	#HTTP_REFERER
 				else:	opts['bn'] = "<span class=bfligt>%s </span><br />" % r[d.index('bname')].replace('"', " ")
 			if r[d.index('sp')] and r[d.index('sp')] > 0:
 				opts['sp'] = ' &nbsp; v:%dкм/ч' % r[d.index('sp')]
@@ -210,7 +214,7 @@ def	view_ts_config (request):
 	dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
 	dorg = dbi.get_dict ('SELECT * FROM org_desc WHERE inn = %s' % request['org_inn'])
 	sout = ["""<div class="wffront" style="width: 510px; max-width: 90%">""",
-		"""<div class='list-group-item list-group-item-action active'><span class='tit'> %s </span><span class="float-right">%s</span></div>""" % (dorg['bname'], img_close) ,
+		"""<div class='list-group-item list-group-item-action active'><span class='tit'>ZZZ %s </span><span class="float-right">%s</span></div>""" % (dorg['bname'], img_close) ,
 		str(request)
 		]
 	sout.append('</div>')
@@ -486,26 +490,73 @@ def	update_ts_list (request):
 				print query, '<br>'
 				return
 	
+def	view_routes (request):
+	global	ACTIV_ROUTES
+	'''
+	print "view_routes", request
+	'''
+	HTTP_REFERER = os.environ.get('HTTP_REFERER')
+	if 'atp.html' in HTTP_REFERER:
+		import	polylineutility as pline
+		check_route = True
+		get_route ('987654321')
+		j = 0
+		if request.has_key('view_routes') and request['view_routes'] == 'on':
+			print "~eval| clear_map_object (list_routes); document.myForm.view_routes.value = 'off';"
+			return
+		else:	print "~eval| clear_map_object (list_routes); document.myForm.view_routes.value = 'on';"
+	#	return
+		k = 0
+		for r in ACTIV_ROUTES:
+			j += 1
+	#		print	r.keys()
+			for l in r['st']:
+				if not l['p']:	continue
+				k += 1
+				'''
+				Jm = 100*j +l['i']
+				print l['id'], ['i'], l['p'],
+				'''
+				ps = pline.decode (l['p'], 'list')
+			#	print 	Jm, ps
+			#	print "list_routes[%d] = new L.Polyline(%s, { color: 'red', weight: 5, opacity: 0.2 }).addTo(mymap);" % (l['id'], str(ps))
+				print "list_routes[%d] = new L.Polyline(%s, { color: 'red', weight: 5, opacity: 0.2 }).addTo(mymap);" % (k, str(ps))
+		return
+
 def	view_trace (request, dtime = None):
-	print 'view_trace'
+#	print 'view_trace', request.get('set')
+	if request.get('set')  != 'on' and request['view_trace'] == 'on':
+		print "~eval| clear_map_object (list_tracks); document.myForm.view_trace.value = 'off';"
+		return
+#	else:	print "~eval| document.myForm.view_trace.value = 'on';"
 	points = []	# '56.5,44', '57,44', '57,43.5', '56.5, 43.5' ]
 #	print "~eval| clear_map_object(list_tracks); list_tracks[%s] = new L.Polyline([[%s]], { color: 'blue', weight: 3, opacity: 0.5 }).addTo(mymap); mymap.fitBounds(list_tracks['blue'].getBounds());" % (j, "],[".join(points) )
 	dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
-	if dtime and dtime.isdigit():
-		res = dbi.get_table ('vdata_pos', "t > %d AND x > 0 ORDER BY ida, t " % (int(time.time()) - int(dtime)))
-	else:	res = dbi.get_table ('vdata_pos', "t > %d AND x > 0 ORDER BY ida, t " % (int(time.time()) - 3600))	#4*3600))
+	bm_ssys = request.get('bm_ssys')
+	if bm_ssys and bm_ssys.isdigit():
+		and_bm_ssys = "AND tinn IN (SELECT inn FROM org_desc WHERE bm_ssys = %s)" % bm_ssys
+	else:	and_bm_ssys = ""
+#	print "and_bm_ssys", and_bm_ssys
+	if not dtime:
+		HTTP_REFERER = os.environ.get('HTTP_REFERER')
+		if 'atp.html' in HTTP_REFERER:
+			dtime = 90
+		else:	dtime = 3600
+	elif type(dtime) == str:
+		dtime = int(dtime)
+	res = dbi.get_table ('vdata_pos', "t > %d AND x > 0 %s ORDER BY ida, t " % (int(time.time()) - dtime, and_bm_ssys))
 	if not res:
-		print "view_trace: Нет данных!"
+#		print "view_trace: Нет данных!"
 		return
 	d = res[0]
 	gosnum = ''
 	j = 0
-	print "~eval| clear_map_object (list_tracks);"
+	print "~eval| clear_map_object (list_tracks); document.myForm.view_trace.value = 'on';"
 	for r in res[1]:
 		if gosnum and gosnum != r[d.index('gosnum')]:
 			if not points:	continue
 			j += 1
-			print "list_tracks[%s] = new L.Polyline([[%s]], { color: 'blue', weight: 3, opacity: 0.2 }).addTo(mymap);" % ( j, "],[".join(points) )
+			print "list_tracks[%s] = new L.Polyline([[%s]], { color: 'blue', weight: 7, opacity: 0.3 }).addTo(mymap);" % ( j, "],[".join(points) )
 			points = [ "%s, %s" % (float(r[d.index('y')]), float(r[d.index('x')])) ]
 			gosnum = r[d.index('gosnum')]
 		elif gosnum == "":
@@ -514,8 +565,8 @@ def	view_trace (request, dtime = None):
 			points.append ("%s, %s" % (float(r[d.index('y')]), float(r[d.index('x')])))
 	if points:
 		j += 1
-		print "list_tracks[%s] = new L.Polyline([[%s]], { color: 'blue', weight: 3, opacity: 0.5 }).addTo(mymap);" % (j, "],[".join(points) )
-	print "~eval| set_shadow ('get_transport');"
+		print "list_tracks[%s] = new L.Polyline([[%s]], { color: 'blue', weight: 7, opacity: 0.3 }).addTo(mymap);" % (j, "],[".join(points) )
+#	print "~eval| set_shadow ('get_transport');"
 
 def	snow_zone (request):
 	znames = ['autozavod.json', 'kanavino.json', 'lenin.json', 'moskva.json', 'nijegorod.json', 'priofski.json', 'sovetski.json', 'sormovo.json']

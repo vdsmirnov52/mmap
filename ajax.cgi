@@ -57,7 +57,7 @@ def     check ():
 			'''
 			import	recv_tools as rt
 			print time.strftime("~last_time|%T", time.localtime(time.time()))
-			print "~log|", request
+			print "~log|"	#, request
 
 	#		if 'temp.html' in referer:	print "~eval| msg('shstat: %s')" % shstat
 			if shstat == 'GET':
@@ -83,9 +83,12 @@ def     check ():
 
 			if shstat == 'get_transport':
 				ts_list = rt.get_ts(request)
+				'''
 				if ts_list:
+					pass
 					print "~eval| out_data('%s');" % json.dumps(ts_list)
 				else:	print "~eval|document.myForm.org_inn.value=0; alert('У организации ИНН: %s \\nНет АКТИВНЫХ транспортных средств!');" % request.get('org_inn')
+				'''
 			### NimBus
 			elif shstat == 'set_user_position':
 				#set_shadow ('get_user_position&xpos=55.11&ypos=22.33');
@@ -99,9 +102,11 @@ def     check ():
 
 			elif shstat == 'view_canvas':
 				ts_list = rt.get_ts(request)
+				'''
 				if ts_list:
 					print "~eval|out_data('%s');" % json.dumps(ts_list)
 			#	else:	print "~eval|alert('У организации ИНН: %s \\nНет транспортных средств!');" % request.get('org_inn')
+				'''
 			elif shstat == 'set_region':
 				rt.set_region(request)
 			elif shstat == 'view_ts_list':
@@ -119,25 +124,29 @@ def     check ():
 					else:	print "~eval|view_gosnumber(2);"
 			elif shstat == 'view_gzones':
 				ress = rt.view_gzones (request)
-				print '~widget|', ress
+				print '~widget|'	#, ress
 			elif shstat == 'set_organizations':
 				ress = rt.set_organizations (request)
 				print '~widget|', ress
 			elif shstat == 'update_ts_list':	# temp.html Get TS Обновление списка ТС
-				print '~log|'	#, request
+			#	print '~log|'	#, request
 				rt.update_ts_list (request)
 			elif shstat == 'update_recv_ts':
-				print '~log|'
+			#	print '~log|'
 				rt.update_recv_ts(request)
 			elif shstat == 'check_autos':
-				print '~log|'
+			#	print '~log|'
+			#	org_inn = request.get('org_inn')
 				print '~widget|', rt.check_autos (request)
+			#	print "~eval| if (document.myForm.org_inn.value != '%s') start_ws();" % org_inn
 			elif shstat == 'view_trace':		# in ['view_trace', 'set_opts']:
-				print '~log|', request
+			#	print '~log|'	#, request
 				rt.view_trace (request)
 			#	print "~eval| get_tansport();"
+			elif shstat == 'view_routes':
+				rt.view_routes (request)
 			elif shstat == 'set_opts':
-				print '~log|', request
+				print '~log|'	#, request
 				print "ZZZ"
 				rt.view_streets(request)
 			elif 'snow_' in shstat:

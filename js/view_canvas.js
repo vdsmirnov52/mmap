@@ -1,3 +1,6 @@
+/**	file:	js/view_canvas.js
+	brief:	Графики движения ТС
+*/
 function view_canvas(iddom) {
 var popCanvas = $(iddom);	//	$("#popChart");
 var barChart = new Chart(popCanvas, {

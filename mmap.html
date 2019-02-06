@@ -19,11 +19,13 @@
 	<script type='text/javascript' src='/jq/jquery.onajax_answer.js'></script>
 	<script type='text/javascript' src='/jq/jquery.js'></script>
 
-	<link rel='stylesheet' type='text/css' href='/css/mmaps.css' />
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
 	<link rel='stylesheet' type='text/css' href='/css/font-awesome/css/font-awesome.min.css' />
+	<link rel="stylesheet" type='text/css' href="/css/line-icons-pro/transport/webfont/styles.css">
+	<link rel='stylesheet' type='text/css' href='/css/mmaps.css' />
 	<script type='text/javascript' src='/js/mmap/document_ready.js'></script>
 	<script type='text/javascript' src='/js/mmap/bymaps.js'></script>
+	<script type='text/javascript' src='/js/mmap/ws_functions.js'></script>
 
 <script type="text/javascript">
 ///////////////////////////////////////////////////
@@ -37,6 +39,7 @@ function	config_ts () {	set_shadow('view_ts_config')	}
 <form name='myForm' action='http://212.193.103.21/tmp/mmap.html' method='post'>
     <fieldset class='hidd'>
         <input id='view_gosnum' name='view_gosnum' type='hidden' value='off' />
+        <input id='view_all_ts' name='view_all_ts' type='hidden' value='off' />
         <input name='cod_region' type='hidden' value='' />
         <input name='org_inn' type='hidden' value='0' />
         <input name='bm_ssys' type='hidden' value='131072' />
@@ -86,14 +89,16 @@ function	config_ts () {	set_shadow('view_ts_config')	}
 		<div class=""><div class="p-1" id='last_time' > &nbsp;&nbsp;&nbsp;&nbsp; </div> </div>			
 
 		<div id='head_CC' class="col">
-			<span id='load_ts' class='asbutton' onclick="set_shadow ('get_transport');">
+			<span id='load_ts' class='asbutton' onclick="if (document.myForm.view_all_ts.value == 'on') document.myForm.view_all_ts.value = 'off'; else document.myForm.view_all_ts.value='on'; start_ws();">
 				<i class="fa fa-refresh fa-lg" aria-hidden="true"></i>
-				<span class="button-text">Обновить ТС</span>
+				<span class="button-text">Все ТС</span>
 			</span>
+		</div>
+		<!--
 			<span id='updating_ts' class='asbutton' onclick="reload_ts();">
 				<i class="fa fa-refresh fa-lg" aria-hidden="true" title="Обновлять данные"></i>
 			</span>
-		</div>
+		</div-->
 		<!--div id='head_YY' class="">
 			<div id='reload_ts' class='asbutton' onclick="reload_ts();">
 			<span id='updating_ts' class="button-text"> <i class="fa fa-refresh fa-lg" aria-hidden="true" title="Обновлять данные"></i> </span> </div>
@@ -116,6 +121,8 @@ function	config_ts () {	set_shadow('view_ts_config')	}
 	</table-->
 	<span class="line btn btn-info" style="position: absolute; z-index: 1111; margin: 6pt; left: 50pt; opacity: 0.8; font-weight: bold;" onclick="set_shadow ('view_gosnum');"> Гос.&#8470;</span>
 	<span class="line btn btn-info" style="position: absolute; z-index: 1111; margin: 6pt; left: 110pt; opacity: 0.8; font-weight: bold;" onclick="set_shadow ('view_trace');"> <i class="fa fa-flag-checkered fa-lg" aria-hidden="true"></i> </span>
+	<span class='line btn btn-info' id='start_ws' style="position: absolute; z-index: 1111; margin: 6pt; left: 146pt; opacity: 0.8; font-weight: bold; padding: .05rem .75rem" onclick="start_ws();">
+		<i class="icon icon-041" style='font-size: 20px'></i></span>
 </div>	<!-- container-fluid	-->
 
 	<div id="map" style="min-width: 300px; min-height: 300px; max-width: 2100px; height: 800px; border: thin solid #668;"></div>
@@ -123,6 +130,7 @@ function	config_ts () {	set_shadow('view_ts_config')	}
 	<div id='widget' type='hidden' style=''></div> 
 	</form>
 	<!--div id='warnn' >'warnn'</div--> 
-	<div id='log' style="height: 30px; overflow: auto">'log'</div> 
+	<div id='log' class='' style="color: #a11; left: 44pt; top: 90px; position: absolute; z-index: 1111; height: 44px; width: 1000px; font-size: 12px; overflow: auto"></div>
+	<!--div id='log' style="height: 30px; overflow: auto">'log'</div--> 
 </body>
 </html>

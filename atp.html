@@ -19,11 +19,12 @@
 	<script type='text/javascript' src='/jq/jquery.onajax_answer.js'></script>
 	<script type='text/javascript' src='/jq/jquery.js'></script>
 
-	<link rel='stylesheet' type='text/css' href='/css/atp.css' />
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
 	<link rel='stylesheet' type='text/css' href='/css/font-awesome/css/font-awesome.min.css' />
+	<link rel='stylesheet' type='text/css' href='/css/atp.css' />
 	<script type='text/javascript' src='/js/atp/document_ready.js'></script>
 	<script type='text/javascript' src='/js/atp/bymaps.js'></script>
+	<script type='text/javascript' src='/js/atp/ws_functions.js'></script>
 
 <script type="text/javascript">
 ///////////////////////////////////////////////////
@@ -37,6 +38,8 @@ function	config_ts () {	set_shadow('view_ts_config')	}
 <form name='myForm' action='http://212.193.103.21/tmp/atp.html' method='post'>
 	<fieldset class='hidd'>
 	<input id='view_gosnum' name='view_gosnum' type='hidden' value='off' />
+	<input id='view_trace' name='view_trace' type='hidden' value='off' />
+	<input id='view_routes' name='view_routes' type='hidden' value='off' />
 	<input name='cod_region' type='hidden' value='' />
 	<input name='org_inn' type='hidden' value='0' />
 	<input name='bm_ssys' type='hidden' value='2' />
@@ -44,13 +47,15 @@ function	config_ts () {	set_shadow('view_ts_config')	}
 	<input name='snow_flag' type='hidden' value='' />
 	</fieldset>
 	
-	<span class="line btn btn-info" style="position: absolute; z-index: 1111; margin: 6pt; left: 50pt; opacity: 0.8; font-weight: bold;" onclick="set_shadow ('view_gosnum');"> Гос.&#8470;</span>
+	<span class="line btn btn-info" style="position: absolute; z-index: 1111; margin: 6pt; left: 38pt; opacity: 0.8; font-weight: bold;" onclick="set_shadow ('view_gosnum');" title='&#8470; маршрута'>&#8470;</span>
+	<span class="line btn btn-info" style="position: absolute; z-index: 1111; margin: 6pt; left: 75pt; opacity: 0.8; font-weight: bold;" onclick="set_shadow ('view_routes');" title='Маршрут'> M </span>
 	<!--56,3111524:44,0302172
 	<span class="line btn btn-info" style="position: absolute; z-index: 1111; margin: 6pt; left: 50pt; opacity: 0.8; font-weight: bold;" onclick="set_shadow ('set_user_position&xpos=44.030217&ypos=56.311152&level=17');"> Гос.&#8470;</span-->
-	<span class="line btn btn-info" style="position: absolute; z-index: 1111; margin: 6pt; left: 110pt; opacity: 0.8; font-weight: bold;" onclick="set_shadow ('view_trace');">
+	<span class="line btn btn-info" style="position: absolute; z-index: 1111; margin: 6pt; left: 110pt; opacity: 0.8; font-weight: bold;" onclick="set_shadow ('view_trace');" title='Треки ТС'>
 		<i class="fa fa-flag-checkered fa-lg" aria-hidden="true"></i> </span>
-	<span class='line btn btn-info' id='updating_ts' style="position: absolute; z-index: 1111; margin: 6pt; left: 150pt; opacity: 0.8; font-weight: bold;" onclick="reload_ts();">
-		<i class="fa fa-refresh fa-lg" aria-hidden="true" title="Обновлять данные"></i> </span>
+	<!--span class='line btn btn-info' id='updating_ts' style="position: absolute; z-index: 1111; margin: 6pt; left: 150pt; opacity: 0.8; font-weight: bold;" onclick="reload_ts();">
+		<i class="fa fa-refresh fa-lg" aria-hidden="true" title="Обновлять данные"></i> </span-->
+	<span class='line btn btn-info' id='start_ws' style="position: absolute; z-index: 1111; margin: 6pt; left: 190pt; opacity: 0.8; font-weight: bold;" onclick="start_ws();">WS</span>
 	<!--
 	<span class="line btn btn-info" style="position: absolute; z-index: 1111; margin: 6pt; left: 190pt; opacity: 0.8; font-weight: bold;"><a href="http://212.193.103.21/cgi-bin/ajax.cgi?this=ajax&shstat=nimbus&cmd=depots">NimBus</a></span-->
 
@@ -58,6 +63,7 @@ function	config_ts () {	set_shadow('view_ts_config')	}
 
 	<div id='widget' type='hidden' style=''></div> 
 	</form>
-	<!--div id='log' style="height: 30px; overflow: auto">'log'</div-->
+	<div id='log' class='' style="left: 44pt; top: 50px; position: absolute; z-index: 1111; height: 44px; width: 480px; font-size: 12px; overflow: auto"></div>
+	<!--div id='log' class='btn-info' style="left: 80pt; top: 800px; position: absolute; z-index: 1111; height: 130px; width: 1200px; font-size: 12px; overflow: auto">'log'</div-->
 </body>
 </html>
