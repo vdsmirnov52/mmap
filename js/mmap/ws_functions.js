@@ -7,6 +7,7 @@ var websocket = null;
 
 function start_ws () {
 	clear_map_object (listTS);
+	clear_map_object (list_tracks);
 	if (websocket != null)	 websocket.close();
 
 	websocket = new WebSocket(wsUri);
@@ -47,7 +48,7 @@ function get_listTS (data) {
 	for (var i=0; i<=plist.length-1; i++) {
 		var gosnum = plist[i]['gosnum'];
 		var code = plist[i]['code'];
-		var YX = plist[i]['r'];
+		var YX = plist[i]['r'][0];
 		if (plist[i]['rnum']) 
 			if (plist[i]['ex'] || plist[i]['ex'] == 'default')
 				var rnum = '<span class="sz12 bferr">№' + plist[i]['rnum'] + '&nbsp;</span>';
@@ -65,6 +66,16 @@ function get_listTS (data) {
 		//	var str_html = '<span class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-bus fa-stack-1x fa-inverse" aria-hidden="true"></i></span>'+ rnum ;
 //		else	var str_html = '<span class="fa-stack fa-lg bfinf"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-bus fa-stack-1x fa-inverse" aria-hidden="true"></i></span>';
 		else	var str_html = '<span class="fa-stack fa-lg bfinf"><i class="fa fa-circle fa-stack-2x" style="opacity: 0.6"></i><i class="fa icon-041 fa-stack-1x fa-inverse" aria-hidden="true"></i></span>';
-		listTS[code] = L.marker(YX, {icon: L.divIcon({className: 'icon', iconAnchor: [12,14], html: str_html})}).addTo(mymap).bindPopup(str_ppup);
+		listTS[code] = L.marker(YX, {icon: L.divIcon({className: 'icon', iconAnchor: [14,14], html: str_html})}).addTo(mymap).bindPopup(str_ppup);
+
+		// Показать трек
+		if (document.myForm.view_trace.value == 'on') {
+			var tr = plist[i]['r'];
+			if (list_tracks[code]) {
+				list_tracks[code].remove();
+				delete (list_tracks[code]);
+			}
+			list_tracks[code] = new L.Polyline(tr, { color: 'blue', weight: 7, opacity: 0.3 }).addTo(mymap);
+		}
 	}
 }

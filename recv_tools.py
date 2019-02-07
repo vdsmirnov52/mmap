@@ -527,8 +527,8 @@ def	view_trace (request, dtime = None):
 #	print 'view_trace', request.get('set')
 	if request.get('set')  != 'on' and request['view_trace'] == 'on':
 		print "~eval| clear_map_object (list_tracks); document.myForm.view_trace.value = 'off';"
-		return
-#	else:	print "~eval| document.myForm.view_trace.value = 'on';"
+	else:	print "~eval| document.myForm.view_trace.value = 'on';"
+	return
 	points = []	# '56.5,44', '57,44', '57,43.5', '56.5, 43.5' ]
 #	print "~eval| clear_map_object(list_tracks); list_tracks[%s] = new L.Polyline([[%s]], { color: 'blue', weight: 3, opacity: 0.5 }).addTo(mymap); mymap.fitBounds(list_tracks['blue'].getBounds());" % (j, "],[".join(points) )
 	dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
