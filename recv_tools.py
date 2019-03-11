@@ -339,20 +339,21 @@ def	update_recv_ts (request):
 				inns = []
 				for r in rs:	inns.append(str(r[0]))
 				swhere = "inn IN (%s)" % ', '.join(inns)
-	query = "SELECT id_ts, gosnum, marka, a.device_id, inn, uin FROM transports t, organizations o, atts a WHERE %s AND t.id_org = o.id_org AND id_ts = autos AND a.last_date > '%s' ORDER BY o.id_org;" % (
-		swhere, time.strftime("%Y-%m-%d 00:00:00", time.localtime (time.time ())))
-	print query
+#	query = "SELECT id_ts, gosnum, marka, a.device_id, inn, uin FROM transports t, organizations o, atts a WHERE %s AND t.id_org = o.id_org AND id_ts = autos AND a.last_date > '%s' ORDER BY o.id_org;" % (
+#		swhere, time.strftime("%Y-%m-%d 00:00:00", time.localtime (time.time ())))
+	query = "SELECT id_ts, gosnum, marka, a.device_id, inn, uin FROM transports t, organizations o, atts a WHERE %s AND t.id_org = o.id_org AND id_ts = autos ORDER BY o.id_org;" % swhere
+#	print query
 	'''
 	return
-	### ДТ НН
-#	query = "SELECT id_ts, gosnum, marka, a.device_id, inn, uin FROM transports t, organizations o, atts a WHERE o.bm_ssys=131072 AND t.id_org = o.id_org AND id_ts = autos AND a.last_date > '%s' ORDER BY o.id_org;" % time.strftime("%Y-%m-%d 00:00:00", time.localtime (time.time ()))
 	'''
+	gnum_list = []
 	rows = dbcntr.get_rows (query)
 	if not rows:
 		print query
 		return
 	for r in rows:
 		id_ts, gosnum, marka, device_id, inn, uin = r
+		gnum_list.append(gosnum)
 		if marka:
 			marka = "'%s'" % marka
 		else:	marka = "NULL"
@@ -372,15 +373,16 @@ def	update_recv_ts (request):
 			g, d, i = rr
 			if device_id < 0 and gosnum == g :		continue 
 			if gosnum == g and device_id == d and inn == i:	continue
-			print g, d, i, '!=\t'
+	#		print g, d, i, '!=\t'
 			query = "DELETE FROM recv_ts WHERE gosnum = '%s' OR device_id = %s" % (gosnum, device_id)
-			print query, dbi.qexecute (query)
-	#		continue 
-	#	else:
+	#		print query, dbi.qexecute (query)
+			dbi.qexecute (query)
 		query = "INSERT INTO recv_ts (idd, inn, gosnum, marka, device_id, stat_ts) VALUES ('idd%s', %s, '%s', %s, %s, 0)" % (device_id, inn, gosnum, marka, device_id)
-		print query, dbi.qexecute (query)
-	#	print id_ts, gosnum, marka, device_id, inn, '<br>'
-	print "UPDATE org_desc SET count_ts",	dbi.qexecute ("UPDATE org_desc SET count_ts = (SELECT count(*) FROM recv_ts WHERE org_desc.inn = recv_ts.inn);")
+	#	print query, dbi.qexecute (query)
+		dbi.qexecute (query)
+#	print "UPDATE org_desc SET count_ts",
+	dbi.qexecute ("UPDATE org_desc SET count_ts = (SELECT count(*) FROM recv_ts WHERE org_desc.inn = recv_ts.inn);")
+#	print	"gnum_list:", "', '".join(gnum_list)
 
 def	check_autos (request):
 	# wffront
