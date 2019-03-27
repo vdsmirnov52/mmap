@@ -1,7 +1,8 @@
 #!/usr/bin/python -u
 # -*- coding: utf-8 -*-
-"""
-	WebSocket для подстстемы АнтиСнег http://212.193.103.21/tmp/mmap.html
+""" WebSocket сервер:
+	- Готовит данные о движении ТС для подстстемы АнтиСнег
+	- Отправляет на http://212.193.103.21/tmp/mmap.html
 
 	nohup /home/smirnov/MyTests/WS/ws_receiver.py > /home/smirnov/MyTests/log/ws_receiver.log  &
 """

@@ -150,7 +150,7 @@ def     check ():
 				print "ZZZ"
 				rt.view_streets(request)
 			elif 'snow_' in shstat:
-				print '~log|Snow: ', request
+				print '~log|'	#Snow: ', request
 				rt.snow_opts (request)
 			else:
 				print '~log|shstat:', shstat, request
@@ -167,7 +167,7 @@ def     check ():
 			else:	pass
 			'''
 			sys.exit()
-		elif os.environ['REQUEST_METHOD'] == 'GET':
+		elif os.environ['REQUEST_METHOD'] == 'GET':	# Запрос к NimBus, вернуть ответ
 			print """Content-Type: text/html; charset=utf-8;\n\n"""
 			shstat = request.get('shstat')
 			### NimBus
@@ -177,20 +177,8 @@ def     check ():
 				cmnd = request.get('cmd')
 				res = nimbus.api_nimbus(cmnd, "Token 30e04452062e435a9b48740f19d56f45")
 				print json.dumps(pres (res))
-				'''
-				print	str(res)
-				sres = str(res)
-				sss = ''
-				j = 0
-				print  "<pre>"	#.encode('UTF-8')
-				print type(res)	#,encode('UTF-8')
-				while j == 0:
-					j = sres.find ("u'\\u", j)
-					print j, print sres[j:]
-				print  "</pre>"	#.encode('UTF-8')
-				'''
-
 				return
+
 		else:	print '\n\n :', os.environ['REQUEST_METHOD']
 		'''
 		else:	print '\n\n request:', request, os.environ['REQUEST_METHOD']

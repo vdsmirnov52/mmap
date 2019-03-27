@@ -573,7 +573,7 @@ def	view_trace (request, dtime = None):
 def	snow_zone (request):
 	znames = ['autozavod.json', 'kanavino.json', 'lenin.json', 'moskva.json', 'nijegorod.json', 'priofski.json', 'sovetski.json', 'sormovo.json']
 	zn = request.get('zone_name')
-	print "QQQ=", zn, 1+znames.index(zn)
+#	print "QQQ=", zn, 1+znames.index(zn)
 	request['cod_region'] = 1+znames.index(zn)
 	print request
 	return	out_streets (request, scateg = 'ALL')
@@ -713,6 +713,7 @@ def	snow_opts (request):
 			<select name='set_snow_flag' class='ssel' onchange="set_shadow('snow_opts');">
 			<option value='0'> Нет </option><option value='1'> Да </option><option value='2'> Сильный </option></select> </span></li>"""
 
+		''' ####
 		if not os.environ['REMOTE_ADDR'] in ['10.10.2.40']:
 			print """<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center'><pre>"""
 			print	"%20s:" % 'REMOTE_ADDR', os.environ['REMOTE_ADDR']
@@ -721,7 +722,6 @@ def	snow_opts (request):
 			return
 		###	
 	#	print """<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center'>%s<span class="badge badge-light badge-pill">%s</span></li>""" % ('123456', 654321)
-		'''
 		for k in os.environ.keys():	print k	, os.environ[k]
 		if not os.environ['REMOTE_ADDR'] in ['10.10.2.40']:
 		'''
@@ -745,24 +745,41 @@ def	snow_opts (request):
 
 		print """<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center active'>Выбор района города
 			<span class="badge badge-light badge-pill" onclick="clear_map_object (list_streets);">Очистить</span></li>"""
-		print """<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center'> <ul>
-		<li><span onclick="set_shadow ('snow_zone&zone_name=autozavod.json');">Автозаводский</span>
+		if os.environ['REMOTE_ADDR'] in ['10.10.2.40']:
+			print """
+			<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center'> <ul>
+			<li><span onclick="set_shadow ('snow_zone&zone_name=autozavod.json');">Автозаводский</span> </li>
+			<li><span onclick="set_shadow ('snow_zone&zone_name=kanavino.json');">Канавинский</span> </li>
+			<li><span onclick="set_shadow ('snow_zone&zone_name=lenin.json');">Ленинский</span> </li>
+			<li><span onclick="set_shadow ('snow_zone&zone_name=moskva.json');">Московский</span> </li>
+			<li><span onclick="set_shadow ('snow_zone&zone_name=nijegorod.json');">Нижегородский</span> </li>
+			<li><span onclick="set_shadow ('snow_zone&zone_name=priofski.json');">Приокский</span> </li>
+			<li><span onclick="set_shadow ('snow_zone&zone_name=sovetski.json');">Советский</span> </li>
+			<li><span onclick="set_shadow ('snow_zone&zone_name=sormovo.json');">Сормовский</span> </li>
+			</ul></li>
+			"""	
+		else:
+			print """<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center'> <ul>
+			<li><span onclick="set_shadow ('snow_zone&zone_name=autozavod.json');">Автозаводский</span>
 			<span class="badge badge-light badge-pill" onclick="set_shadow('snow_test&region_id=1');">Сетка</li>
-		<li><span onclick="set_shadow ('snow_zone&zone_name=kanavino.json');">Канавинский</span>
+			<li><span onclick="set_shadow ('snow_zone&zone_name=kanavino.json');">Канавинский</span>
 			<span class="badge badge-light badge-pill" onclick="set_shadow('snow_test&region_id=2');">Сетка</li>
-		<li><span onclick="set_shadow ('snow_zone&zone_name=lenin.json');">Ленинский</span>
+			<li><span onclick="set_shadow ('snow_zone&zone_name=lenin.json');">Ленинский</span>
 			<span class="badge badge-light badge-pill" onclick="set_shadow('snow_test&region_id=3');">Сетка</li>
-		<li><span onclick="set_shadow ('snow_zone&zone_name=moskva.json');">Московский</span>
+			<li><span onclick="set_shadow ('snow_zone&zone_name=moskva.json');">Московский</span>
 			<span class="badge badge-light badge-pill" onclick="set_shadow('snow_test&region_id=4');">Сетка</li>
-		<li><span onclick="set_shadow ('snow_zone&zone_name=nijegorod.json');">Нижегородский</span>
+			<li><span onclick="set_shadow ('snow_zone&zone_name=nijegorod.json');">Нижегородский</span>
 			<span class="badge badge-light badge-pill" onclick="set_shadow('snow_test&region_id=5');">Сетка</li>
-		<li><span onclick="set_shadow ('snow_zone&zone_name=priofski.json');">Приокский</span>
+			<li><span onclick="set_shadow ('snow_zone&zone_name=priofski.json');">Приокский</span>
 			<span class="badge badge-light badge-pill" onclick="set_shadow('snow_test&region_id=6');">Сетка</li>
-		<li><span onclick="set_shadow ('snow_zone&zone_name=sovetski.json');">Советский</span>
+			<li><span onclick="set_shadow ('snow_zone&zone_name=sovetski.json');">Советский</span>
 			<span class="badge badge-light badge-pill" onclick="set_shadow('snow_test&region_id=7');">Сетка</li>
-		<li><span onclick="set_shadow ('snow_zone&zone_name=sormovo.json');">Сормовский</span>
+			<li><span onclick="set_shadow ('snow_zone&zone_name=sormovo.json');">Сормовский</span>
 			<span class="badge badge-light badge-pill" onclick="set_shadow('snow_test&region_id=8');">Сетка</li>
 			</ul></li>"""
+		
+		print	"</div></div>"
+		return	####
 #		print """<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center active' onclick="document.myForm.org_inn.value=%d; $('#widget').html(''); set_shadow ('get_transport');">%s<span class="badge badge-primary badge-pill">%s</span></li>""" % (987654, 'qwer', 'QWERT')
 		print """<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-center active'>Карта<span class="badge badge-primary badge-pill">QWER</span></li>"""
 		print """<li class='list-group-item list-group-item-action d-flex justify-content-between align-items-cente'>"""

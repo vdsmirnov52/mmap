@@ -26,7 +26,7 @@ mitex_dtmcodes = threading.Lock()
 mitex_stops = threading.Lock()
 
 GLOB_DIRECTORY = {}	# Kei = Unut ID	(code)	- ID Машины
-MAX_DTM = 60
+MAX_DTM = 360
 DTM_CODES = []
 for j in xrange(MAX_DTM):	DTM_CODES.append(None)
 
@@ -152,10 +152,14 @@ def	actual_directory ():
 	j = 0
 	while not exit_request:
 		if last_id == 0:
-			swhere = 'tinn IN (SELECT inn FROM org_desc WHERE bm_ssys & %s = %s) LIMIT 100' % (bm_ssys, bm_ssys)
-		else:	swhere = 'tinn IN (SELECT inn FROM org_desc WHERE bm_ssys & %s = %s) AND id_lp > %s' % (bm_ssys, bm_ssys, last_id)
-	#	print	'\tswhere:', swhere
-		res = dbi.get_table('vlast_pos', swhere)
+			rid = dbi.get_row ("SELECT max(id_dp) FROM vdata_pos WHERE tinn IN (SELECT inn FROM org_desc WHERE bm_ssys & %s > 0)" % bm_ssys)
+			last_id = rid[0]
+			swhere = 'tinn IN (SELECT inn FROM org_desc WHERE stat > 0 AND bm_ssys & %s = %s)' % (bm_ssys, bm_ssys)
+			res = dbi.get_table('vlast_pos', swhere)
+		else:
+			swhere = 'tinn IN (SELECT inn FROM org_desc WHERE stat > 0 AND bm_ssys & %s = %s) AND id_dp > %s AND x > 0.0 ORDER BY t' % (bm_ssys, bm_ssys, last_id)
+			res = dbi.get_table('vdata_pos', swhere)
+#		print	'\tswhere:', swhere
 		tm = int(time.time())
 		jtm = tm % MAX_DTM
 		if not res:
@@ -170,20 +174,28 @@ def	actual_directory ():
 			if not code in codes:	codes.append(code)
 			with mutex_directory:
 				cdct = GLOB_DIRECTORY.get(code)
-				if cdct:
+				if cdct:	# фиксировать текущие изменения
+					if cdct['t'] > r[d.index('t')]:		continue
 					if not cdct.get('gosnum'):	cdct['gosnum'] = r[d.index('gosnum')]
-				#	cdct['r'] = [float(r[d.index('y')]),  float(r[d.index('x')])]	#, r[d.index('t')]]
 					cdct['r'].insert(0, [float(r[d.index('y')]),  float(r[d.index('x')])])
 					if len (cdct['r']) > 10:	cdct['r'].pop(-1)
 					cdct['t'] = r[d.index('t')]
 					cdct['sp'] = r[d.index('sp')]
-				#	GLOB_DIRECTORY[code] = cdct
 				else:
 					gosnum = r[d.index('gosnum')]
-					GLOB_DIRECTORY[code] = {'r': [[float(r[d.index('y')]),  float(r[d.index('x')])]], 'gosnum': gosnum, 't': r[d.index('t')], 'sp': r[d.index('sp')] }
+					if 'bname' in d:
+						bname = str(r[d.index('bname')])
+					else:	bname = '???'
+					GLOB_DIRECTORY[code] = {'r': [[float(r[d.index('y')]),  float(r[d.index('x')])]], 'gosnum': gosnum, 'bname': bname, 't': r[d.index('t')], 'sp': r[d.index('sp')] }
+
+			if 'id_dp' in d:
+				if last_id < r[d.index('id_dp')]:	last_id = r[d.index('id_dp')]
+
+		tm = int(time.time())
+		jtm = tm % MAX_DTM
 		with mitex_dtmcodes:
 			DTM_CODES[jtm] = codes
-		last_id = r[d.index('id_lp')]
+#		print "len(codes):", len(codes), jtm, time.strftime("\t%T", time.localtime(tm))
 		time.sleep(1)
 		'''
 		print "%4d" % j, len(res[1]) 
@@ -216,10 +228,12 @@ def	get_poss (tm, tm_old):
 #	with mitex_dtmcodes:
 	codes = DTM_CODES[jtm]
 	if tm != codes[0]:	#DTM_CODES[jtm][0]:
-		time.sleep(0.04)
-		codes = DTM_CODES[jtm]
-		if tm != codes[0]:
-			print "ERR tm:", tm, jtm, codes
+	#	time.sleep(0.04)
+	#	codes = DTM_CODES[jtm]
+	#	if tm != codes[0]:
+		with mitex_dtmcodes:
+			DTM_CODES[jtm] = None
+#			print "ERR tm:", tm, jtm, codes
 			return
 	for jcode in codes[1:]:	#DTM_CODES[jtm][1:]:
 	#	dcode = GLOB_DIRECTORY.get(jcode)
@@ -228,20 +242,52 @@ def	get_poss (tm, tm_old):
 			dcode = GLOB_DIRECTORY[jcode].copy()
 		if dcode:
 			dcode['code'] = jcode
+			t = dcode.get('t')
 			if dcode.has_key('rn'):
 				dcode['rnum'] = dcode.get('rn')
 				if dcode.get('rem'):
-					dcode['opts'] = "%s %s<br>%s" % (time.strftime("<span class='fligt sz12'>%T</span>", time.localtime (tm)), str_speed(dcode['sp']), dcode.get('rem'))
+					dcode['opts'] = "%s %s<br>%s" % (time.strftime("<span class='fligt sz12'>%T</span>", time.localtime (t)), str_speed(dcode['sp']), dcode.get('rem'))
 				#	dcode['ex'] = 'actual'
 				#	if dcode.has_key('ex'):		del dcode['ex']
 				else:
-					dcode['opts'] = "%s %s<br>%s" % (time.strftime("<span class='fligt sz12'>%T</span>", time.localtime (tm)), str_speed(dcode['sp']), 'МУП "Борское ПАП"')
+					dcode['opts'] = "%s %s<br>%s" % (time.strftime("<span class='fligt sz12'>%T</span>", time.localtime (t)), str_speed(dcode['sp']), dcode['bname'])	#'МУП "Борское ПАП"')
 					dcode['ex'] = 'default'
-			else:	dcode['opts'] = "%s %s" % (time.strftime("<span class='fligt sz12'>%T</span>", time.localtime (tm)), str_speed(dcode['sp']))
+			else:	dcode['opts'] = "%s %s<br>%s" % (time.strftime("<span class='fligt sz12'>%T</span>", time.localtime (t)), str_speed(dcode['sp']), dcode['bname'])
+			list_data.append(dcode)
+		else:
+			print "NOT jcode:", jcode, dcode
+#	print "\tget_poss:", len(list_data), jtm, time.strftime("\t%T", time.localtime (tm))
+	return	list_data
+
+def	get_all_poss (tm, request):
+	""" Подгоро	"""
+	global  GLOB_DIRECTORY, INN_CODES
+	sinn = request.get('org_inn')
+	if sinn and sinn.isdigit() and int(sinn) > 1000000000:
+		inn = int(sinn)
+		if not inn in INN_CODES.keys():		return
+	else:	inn = None
+
+	list_data = []
+	for jcode in GLOB_DIRECTORY.keys():
+		if inn and not jcode in INN_CODES[inn]:	continue
+		dcode = None
+		with mutex_directory:
+			dcode = GLOB_DIRECTORY[jcode].copy()
+	#	dcode = GLOB_DIRECTORY.get(jcode)
+		if dcode:
+			dcode['code'] = jcode
+			dcode['rnum'] = dcode.get('rn')
+			t = dcode.get('t')
+			if dcode.get('rem'):
+				dcode['opts'] = "%s %s<br>%s" % (time.strftime("<span class='fligt sz12'>%T</span>", time.localtime (t)), str_speed(dcode['sp']), dcode.get('rem'))
+			else:	dcode['opts'] = "%s %s<br>%s" % (time.strftime("<span class='fligt sz12'>%T</span>", time.localtime (t)), str_speed(dcode['sp']), dcode['bname'])
+			if (tm - dcode['t']) > 3600:	dcode['style'] = "color: #77a"
 			list_data.append(dcode)
 		else:
 			print "NOT jcode:", jcode, dcode
 	return	list_data
+
 
 def parse_sform (sdate = ''):	# 'TEST=atp&view_gosnum=off&view_trace=off&view_routes=off&cod_region=&org_inn=0&bm_ssys=2&snow_stat=&snow_flag=&leaflet-base-layers=on'):
 	res = {}
@@ -346,8 +392,8 @@ def create_handshake (handshake):
 		return	1002
 
 def handle (s, addr):
-	""" И будем в функции handle получать сообщение открывать его, закрывать и посылать обратно	"""
-	try:
+		""" И будем в функции handle получать сообщение открывать его, закрывать и посылать обратно	"""
+#	try:
 		data = s.recv(1024)
 #		print data
 		ans = create_handshake(data)
@@ -355,7 +401,8 @@ def handle (s, addr):
 			s.send(pack_frame("%s\r\n" % ans, 0x8))
 			return
 		s.send(ans)	#create_handshake(data))
-		tm_old = intm = int(time.time())
+		intm = int(time.time())
+		tm_old = intm -1	#MAX_DTM
 		request = None
 		while True:
 			data = s.recv(1024)
@@ -366,23 +413,25 @@ def handle (s, addr):
 			if request == None:
 				request = parse_sform (unpdata['payload'])
 				print '\trequest', request
+				ddata = get_all_poss (intm, request)
+				print "QQQ\t", len(ddata), time.strftime("\t%T", time.localtime (time.time ()))
+				if ddata:	s.send(pack_frame("~eval| get_listTS(%s)" % json.dumps(ddata), 0x1))
+
 		#	ddata = get_vlast_pos (intm -5)
-			if (intm-tm_old) > 1:
-				ddata = get_poss (intm-1, tm_old)
+			ddata = None
+			for jt in xrange((intm-tm_old), 0, -1):
+				ddata = get_poss (intm-jt, tm_old)
 				if ddata:
+				#	print "\tddata", len(ddata), time.strftime("\t%T", time.localtime (intm-jt))
 					s.send(pack_frame("~eval| get_listTS(%s)" % json.dumps(ddata), 0x1))
-			ddata = get_poss (intm, tm_old)
-			if ddata:
-			#	print	len(ddata), time.strftime("\t%T", time.localtime (intm))
-				s.send(pack_frame("~eval| get_listTS(%s)" % json.dumps(ddata), 0x1))
-		#	else:	s.send(pack_frame("~log| %s" % time.strftime("\t%T", time.localtime (time.time ())), 0x1))
+			if not ddata:	time.sleep(0.3)
 			tm_old = intm
-			intm = int(time.time())
 			time.sleep(1)
+			intm = int(time.time())
 			s.send (pack_frame('PING',0x9))
 			if exit_request:	break
-	except:	pexcept ('handle')
-	finally:
+#	except:	pexcept ('handle')
+#	finally:
 		s.close()
 		print 'Close', addr
 
@@ -394,7 +443,7 @@ def start_server ():
 	s.listen(1)
 	while 1:
 		conn, addr = s.accept()
-		print 'Connected by', addr
+		print 'Connected by', addr, time.strftime("\t%d.%m.%Y %T", time.localtime (time.time ()))
 		threading.Thread(target = handle, args = (conn, addr)).start()
 
 HEADS = """
