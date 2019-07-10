@@ -5,10 +5,28 @@ function	set_shadow (shstat) {	$.ajax({data: 'shstat='+ shstat +'&' +$('form').s
 	$('#map').css({'height': document.documentElement.clientHeight +'px', 'width': '100%'});
 //	set_shadow('get_transport');
 	start_ws ();
+	var ws_interval = setInterval(check_ws, 20000);
 
-//var timerId = setInterval(set_shadow, 20000, 'view_canvas');
 
-	mymap = L.map('map').setView([56.32354, 43.99121], 14);
+	var pos = [56.32354, 43.99121], mlv = 11;
+	
+	/* Достать список парамертов из URL ( pos=[56.357907,44.055898] - геопозиция пользователя )*/
+	var purl = location.search.slice(1).split("&");	//[0].split("="));
+	if (purl) {
+		for (var j = 0; j < purl.length; j++) {
+			var p = purl[j].split("=");
+			if (p[0] == "pos") {
+				if (p[1] == "BOR")
+					pos = [56.357907,44.062008];
+				else	pos = JSON.parse(p[1]);	//eval(p[1]);
+				mlv = 14;
+				break
+			}
+		}
+	}
+	mymap = L.map('map').setView(pos, 13);	//[56.32354, 43.99121], 12);
+
+///	mymap = L.map('map').setView([56.32354, 43.99121], 14);
 
 var	rnic_nn = '';	// &copy; <a href="http://rnc52.ru/" title="РНИЦ Нижегородской области">RNIC 52</s>';
 var	osmLayer = new L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {

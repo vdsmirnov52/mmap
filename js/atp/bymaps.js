@@ -1,3 +1,4 @@
+/*
 var intervalID = null;
 function	reload_ts () {
 	return
@@ -11,7 +12,7 @@ function	reload_ts () {
 		$('#updating_ts').html('<i class="fa fa-refresh fa-lg" aria-hidden="true" title="Обновлять данные"></i>');	// Обновление');
 	}
 }
-
+*/
 var	dict_gosnumber = [];	// Гос№
 var	dict_ts_list = [];	// Транспорт
 var	list_regionn = [];	// районы города

@@ -101,8 +101,10 @@ def     check ():
 					print	"""~eval|mymap.setView([%s, %s]); user_position = L.marker([%s, %s]).addTo(mymap).bindPopup('Текущее местоположение.').openPopup(); """ % (ypos, xpos, ypos, xpos)
 
 			elif shstat == 'view_canvas':
-				ts_list = rt.get_ts(request)
+				import ytest as y
+				y.get_route (request)
 				'''
+				ts_list = rt.get_ts(request)
 				if ts_list:
 					print "~eval|out_data('%s');" % json.dumps(ts_list)
 			#	else:	print "~eval|alert('У организации ИНН: %s \\nНет транспортных средств!');" % request.get('org_inn')
