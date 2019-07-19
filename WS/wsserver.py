@@ -375,6 +375,12 @@ def pack_frame (buf, opcode, base64=False):
 		header = struct.pack('>BBH', b1, 126, payload_len)
 	elif payload_len >= 65536:
 		header = struct.pack('>BBQ', b1, 127, payload_len)
+	'''
+	fout = open (r'/tmp/pack_frame', 'a+')
+	fout.write(header)
+	fout.close()
+#	print	"payload_len", payload_len, "header", header
+	'''
 	return header+buf
 
 def create_handshake (handshake):
@@ -426,22 +432,36 @@ def handle (s, addr):
 			if request == None:
 				request = parse_sform (unpdata['payload'])
 				print '\trequest', request
+				'''
 				ddata = get_all_poss (intm, request)
-				print "QQQ\t", len(ddata), time.strftime("\t%T", time.localtime (time.time ()))
+				print "get_all_poss\t", len(ddata), time.strftime("\t%T", time.localtime (time.time ()))
 				if ddata:	s.send(pack_frame("~eval| get_listTS(%s)" % json.dumps(ddata), 0x1))
+				'''
+				ald = pack_frame("~eval| get_listTS(%s)" % json.dumps (get_all_poss (intm, request)), 0x1)
+				print "get_all_poss\t", len(ald), time.strftime("\t%T", time.localtime (time.time ()))
+				sendln = 0
+				while sendln < len(ald):
+					sln = s.send (ald[sendln:])
+					if sln == 0:	raise RuntimeError("socket connection broken")
+					sendln += sln
 
 		#	ddata = get_vlast_pos (intm -5)
 			ddata = None
 			for jt in xrange((intm-tm_old), 0, -1):
 				ddata = get_poss (intm-jt, tm_old)
 				if ddata:
-				#	print "\tddata", len(ddata), time.strftime("\t%T", time.localtime (intm-jt))
-					s.send(pack_frame("~eval| get_listTS(%s)" % json.dumps(ddata), 0x1))
-			if not ddata:	time.sleep(0.3)
+					ddd = pack_frame("~eval| get_listTS(%s)" % json.dumps(ddata), 0x1)
+					sendln = 0
+					while sendln < len(ddd):
+						sln = s.send (ddd[sendln:])
+						if sln == 0:	raise RuntimeError("socket connection broken")
+						sendln += sln
+		
+			if not ddata:	time.sleep(1)
 			tm_old = intm
 			time.sleep(1)
 			intm = int(time.time())
-			s.send (pack_frame('PING',0x9))
+			if s.send (pack_frame('PING',0x9)) == 0:	break
 			if exit_request:	break
 	except:	pexcept ('handle')
 	finally:

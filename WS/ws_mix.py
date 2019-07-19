@@ -269,9 +269,9 @@ def create_handshake (handshake):
 		return	1002
 
 def handle (s, addr):
-		""" И будем в функции handle получать сообщение открывать его, закрывать и посылать обратно	"""
-		global	INN_CODES, IDS_bm_ssys
-#	try:
+	""" И будем в функции handle получать сообщение открывать его, закрывать и посылать обратно	"""
+	global	INN_CODES, IDS_bm_ssys
+	try:
 		data = s.recv(1024)
 #		print data
 		ans = create_handshake(data)
@@ -297,16 +297,26 @@ def handle (s, addr):
 				else:	IDS_bm_ssys = 64		# ЖКХ-М Уборка, вывоз мусора
 				ddata = get_all_poss (intm, request)
 				print "QQQ\t", len(ddata), time.strftime("\t%T", time.localtime (time.time ()))
-				if ddata:	s.send(pack_frame("~eval| get_listTS(%s)" % json.dumps(ddata), 0x1))
+				if ddata:
+					pdata = pack_frame("~eval| get_listTS(%s)" % json.dumps(ddata), 0x1)
+					dataln = len(pdata)
+					sendln = 0
+					while sendln < dataln:
+						sln = s.send (pdata[sendln:])
+						if sln == 0:	raise RuntimeError("socket connection broken")
+						sendln += sln
  				
 			ddata = None
 			for jt in xrange((intm-tm_old), 0, -1):
 				ddata = get_poss (intm-jt, tm_old, request)
 				if ddata:
-				#	print "\tddata", len(ddata), time.strftime("\t%T", time.localtime (intm-jt))
-				#	for d in ddata:		print "\t", d.get('gosnum'),  time.strftime("\t%T", time.localtime (d.get('t')))
-					s.send(pack_frame("~eval| get_listTS(%s)" % json.dumps(ddata), 0x1))
-			#	else:	print "ddata", ddata, time.strftime("\t%T", time.localtime (intm-jt))
+					pdata = pack_frame("~eval| get_listTS(%s)" % json.dumps(ddata), 0x1)
+					dataln = len(pdata)
+					sendln = 0
+					while sendln < dataln:
+						sln = s.send (pdata[sendln:])
+						if sln == 0:	raise RuntimeError("socket connection broken")
+						sendln += sln
 			if not ddata:	time.sleep(0.3)
 		#	else:	print "\tddata:", len(ddata)
 			tm_old = intm
@@ -314,8 +324,8 @@ def handle (s, addr):
 			time.sleep(1)
 			s.send (pack_frame('PING',0x9))
 			if exit_request:	break
-#	except:	pexcept ('handle')
-#	finally:
+	except:	pexcept ('handle')
+	finally:
 		s.close()
 		print 'Close', addr
 

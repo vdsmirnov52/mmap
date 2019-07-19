@@ -17,8 +17,15 @@ function start_ws () {
 		var inc_message = evt.data;
 		parse_message (inc_message);
 	}
-	websocket.onerror = function(evt) { $('#log').html('<span style="color: red; font-weight: bold;">WS ERROR:' +evt.data+ '</span>'); websocket.close(); websocket = null;	}
-	websocket.onclose = function(evt) { $('#log').html('<span style="color: red; font-weight: bold;" onclick="start_ws();">CONNECT</span>'); websocket = null;  }
+	websocket.onerror = function(evt) {
+		$('#log').html('<span style="color: red; font-weight: bold;">WS ERROR:' +evt.data+ '</span>');
+		websocket.close(); 
+		websocket = null;
+	}
+	websocket.onclose = function(evt) { 
+		$('#log').html('<span class="line btn btn-info" style="color: red; font-weight: bold;" onclick="start_ws();">CONNECT</span>'); 
+		websocket = null;  
+	}
 }
 function check_ws () {
 	if (websocket == null) {

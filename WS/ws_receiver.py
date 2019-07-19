@@ -268,16 +268,26 @@ def handle (s, addr):
 			if (intm-tm_old) > 1:
 				ddata = get_poss (intm-1, tm_old, request)
 				if ddata:
-					s.send(pack_frame("~eval| get_listTS(%s)" % json.dumps(ddata), 0x1))
+					pdata = pack_frame("~eval| get_listTS(%s)" % json.dumps(ddata), 0x1)
+					dataln = len(pdata)
+					sendln = 0
+					while sendln < dataln:
+						sln = s.send (pdata[sendln:])
+						if sln == 0:	raise RuntimeError("socket connection broken")
+						sendln += sln
 			ddata = get_poss (intm, tm_old, request)
 			if ddata:
-			#	print	len(ddata), time.strftime("\t%T", time.localtime (intm))
-				s.send(pack_frame("~eval| get_listTS(%s)" % json.dumps(ddata), 0x1))
-		#	else:	s.send(pack_frame("~log| %s" % time.strftime("\t%T", time.localtime (time.time ())), 0x1))
+					pdata = pack_frame("~eval| get_listTS(%s)" % json.dumps(ddata), 0x1)
+					dataln = len(pdata)
+					sendln = 0
+					while sendln < dataln:
+						sln = s.send (pdata[sendln:])
+						if sln == 0:	raise RuntimeError("socket connection broken")
+						sendln += sln
 			tm_old = intm
 			intm = int(time.time())
 			time.sleep(1)
-			s.send (pack_frame('PING',0x9))
+			if s.send (pack_frame('PING',0x9)) == 0:	break
 			if exit_request:	break
 	except:	pexcept ('handle')
 	finally:
