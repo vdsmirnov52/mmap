@@ -101,7 +101,8 @@ def     check ():
 					print	"""~eval|mymap.setView([%s, %s]); user_position = L.marker([%s, %s]).addTo(mymap).bindPopup('Текущее местоположение.').openPopup(); """ % (ypos, xpos, ypos, xpos)
 
 			elif shstat == 'view_canvas':
-				import ytest as y
+			#	import ytest as y
+				import ytestrout as y
 				y.get_route (request)
 				'''
 				ts_list = rt.get_ts(request)

@@ -25,6 +25,7 @@ def	get_houselist (fname):
 		else:
 		#	print street, streets, house
 			if not house in streets[street]:	streets[street].append(house)
+	f.close()
 	print '#'*44
 	isid = 4321
 	for k in streets.keys():
@@ -33,9 +34,8 @@ def	get_houselist (fname):
 			res = geo_tools.get_03_uhouse (street=k, house=h, geocoder = 'Yandex')
 		#	print type(res)
 			if type(res) == tuple:
-				for c in res:
-					print c,
-				print
+		#		for c in res:	print c,
+		#		print
 				x = res[0][1]
 				y = res[0][0]
 				query = "INSERT INTO oo_house (gx, gy, house_num) VALUES (%s, %s, '%s', %d)" % (x, y, h, isid)
