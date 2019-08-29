@@ -2,7 +2,7 @@
  *	\brief	Обеспечение обмена данными через WebSocket
  */
 //var wsUri = "ws://localhost:9999/"; var output; 
-var wsUri = "ws://212.193.103.21:19999/"; var output; 
+var wsUri = "ws://212.193.103.21:9996/"; var output; 
 var websocket = null;
 
 function start_ws () {

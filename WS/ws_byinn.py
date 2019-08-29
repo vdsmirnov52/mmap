@@ -1,10 +1,10 @@
 #!/usr/bin/python -u
 # -*- coding: utf-8 -*-
-""" WebSocket сервер:	ws_mix.py
-	- Готовит данные о движении ТС для подстстемы +ЖКХ-М (мусорщики)
+""" WebSocket сервер:	ws_byinn.py
+	- Готовит данные о движении ТС для подстстемы Пассажирские перевозки
 	- Отправляет на http://212.193.103.21/tmp/index.html
 
-	nohup /home/smirnov/MyTests/WS/ws_mix.py > /home/smirnov/MyTests/log/ws_mix.log  &
+	nohup /home/smirnov/MyTests/WS/ws_byinn.py > /home/smirnov/MyTests/log/ws_byinn.log  &
 """
 import	os, sys, time
 import	urllib, json
@@ -44,7 +44,7 @@ def	actual_directory ():
 	j = 0
 	while not exit_request:
 		if IDS_bm_ssys == 0:
-			IDS_bm_ssys = 64
+			IDS_bm_ssys = 2
 		'''
 			time.sleep(11)
 			continue
@@ -76,6 +76,7 @@ def	actual_directory ():
 				cdct = GLOB_DIRECTORY.get(code)
 				if cdct:	# фиксировать текущие изменения
 					if cdct['t'] > r[d.index('t')]:		continue
+					if  not r[d.index('y')]:		continue
 				#	if not cdct.get('gosnum'):	gosnum = r[d.index('gosnum')]
 					cdct['r'].insert(0, [float(r[d.index('y')]),  float(r[d.index('x')])])
 					if len (cdct['r']) > 10:	cdct['r'].pop(-1)
@@ -195,7 +196,7 @@ def parse_sform (sdate = ''):	# 'TEST=atp&view_gosnum=off&view_trace=off&view_ro
 	return	res 
 
 HOST = '212.193.103.21'	#'10.10.2.241'
-PORT = 9997
+PORT = 9996
 
 def unpack_frame (data):
 	""" Эта функция возвращает словарь типа: {'opcode':1, 'length':15, 'fin':1, 'masked':1, 'payload': 'WebSocket rocks' }
