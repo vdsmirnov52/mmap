@@ -1,8 +1,8 @@
 #!/usr/bin/python -u
 # -*- coding: utf-8 -*-
 """ WebSocket сервер:	ws_mix.py
-	- Готовит данные о движении ТС для подстстемы АнтиСнег
-	- Отправляет на http://212.193.103.21/tmp/mmap.html
+	- Готовит данные о движении ТС для подстстемы +ЖКХ-М (мусорщики)
+	- Отправляет на http://212.193.103.21/tmp/index.html
 
 	nohup /home/smirnov/MyTests/WS/ws_mix.py > /home/smirnov/MyTests/log/ws_mix.log  &
 """

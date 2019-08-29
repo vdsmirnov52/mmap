@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+	<title>PP No</title>
+	<link rel="stylesheet" href="/js/leaflet/leaflet.css"	crossorigin="" />
+	<link rel="icon" href="/img/favicon.png" type="image/png"/>
+	<script src="/js/leaflet/leaflet.js" crossorigin=""></script>
+	<script src="/js/leaflet/proj4.js"></script>
+	<script src="/js/leaflet/proj4leaflet.js"></script>
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<!--[if lte IE 8]><link rel="stylesheet" href="http://leaflet.cloudmade.com/dist/leaflet.ie.css" /><![endif]-->
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<script src="http://openweathermap.org/js/leaflet-layer.js"></script>
+	<script src="http://api-maps.yandex.ru/2.0/?load=package.map&lang=ru-RU" type="text/javascript"></script>
+	<script src="/js/layer/tile/Yandex.js"></script>
+	<!-- Chart	
+	<script src="/js/chart/Chart.bundle.js"></script -->
+	<script type='text/javascript' src='/jq/jquery.onajax_answer.js'></script>
+	<script type='text/javascript' src='/jq/jquery.js'></script>
+
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+	<link rel='stylesheet' type='text/css' href='/css/font-awesome/css/font-awesome.min.css' />
+	<link rel='stylesheet' type='text/css' href='/css/atp.css' />
+	<script type='text/javascript' src='/js/at_pp/document_ready.js'></script>
+	<script type='text/javascript' src='/js/at_pp/bymaps.js'></script>
+	<script type='text/javascript' src='/js/at_pp/ws_functions.js'></script>
+
+<script type="text/javascript">
+///////////////////////////////////////////////////
+
+function	list_ts () {	set_shadow('view_ts_list')	}
+function	config_ts () {	set_shadow('view_ts_config')	}
+///////////////////////////////////////////////////
+</script>
+</head>
+<body>
+<form name='myForm' action='http://212.193.103.21/tmp/at_pp.html' method='post'>
+	<fieldset class='hidd'>
+	<input id='view_gosnum' name='view_gosnum' type='hidden' value='off' />
+	<input id='view_trace' name='view_trace' type='hidden' value='off' />
+	<input id='view_routes' name='view_routes' type='hidden' value='off' />
+	<input name='cod_region' type='hidden' value='' />
+	<input name='org_inn' type='hidden' value='0' />
+	<input name='bm_ssys' type='hidden' value='2' />
+	<input name='snow_stat' type='hidden' value='' />
+	<input name='snow_flag' type='hidden' value='' />
+	</fieldset>
+	
+	<span class="line btn btn-info" style="position: absolute; z-index: 1111; margin: 6pt; left: 38pt; opacity: 0.8; font-weight: bold;" onclick="set_shadow ('view_gosnum');" title='&#8470; маршрута'>&#8470;</span>
+	<span class="line btn btn-info" style="position: absolute; z-index: 1111; margin: 6pt; left: 74pt; opacity: 0.8; font-weight: bold;" onclick="set_shadow ('view_routes');" title='Маршрут'> M </span>
+	<!--56,3111524:44,0302172
+	<span class="line btn btn-info" style="position: absolute; z-index: 1111; margin: 6pt; left: 50pt; opacity: 0.8; font-weight: bold;" onclick="set_shadow ('set_user_position&xpos=44.030217&ypos=56.311152&level=17');"> Гос.&#8470;</span-->
+	<span class="line btn btn-info" style="position: absolute; z-index: 1111; margin: 6pt; left: 108pt; opacity: 0.8; font-weight: bold;" onclick="set_shadow ('view_trace');" title='Треки ТС'>
+		<i class="fa fa-flag-checkered fa-lg" aria-hidden="true"></i> </span>
+	<span class='line btn btn-info' id='start_ws' style="position: absolute; z-index: 1111; margin: 6pt; left: 146pt; opacity: 0.8; font-weight: bold;" onclick="start_ws();">WS</span>
+
+	<span class='line btn btn-info' id='start_ws' style="position: absolute; z-index: 1111; margin: 6pt; left: 188pt; opacity: 0.8; font-weight: bold;"
+		title="Выбрать АТП" onclick="set_shadow ('set_tspp');">INN</span>
+	<span class='line btn btn-info' id='start_ws' style="position: absolute; z-index: 1111; margin: 6pt; left: 232pt; opacity: 0.8; font-weight: bold;"
+		title="Показать Остановки" onclick="set_shadow ('view_stops');">Stops</span>
+
+	<div id="map" style="min-width: 300px; min-height: 300px; max-width: 2100px; height: 800px; border: thin solid #668;"></div>
+
+	<div id='widget' type='hidden' style=''></div> 
+	</form>
+	<div id='log' class='' style="left: 44pt; top: 50px; position: absolute; z-index: 1111; height: 44px; width: 90%; font-size: 12px; overflow: auto"></div>
+	<!--div id='log' class='btn-info' style="left: 80pt; top: 800px; position: absolute; z-index: 1111; height: 130px; width: 1200px; font-size: 12px; overflow: auto">'log'</div-->
+</body>
+</html>

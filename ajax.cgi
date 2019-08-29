@@ -152,6 +152,12 @@ def     check ():
 				print '~log|'	#, request
 				print "ZZZ"
 				rt.view_streets(request)
+			elif shstat in ['view_stops', 'set_tspp']:
+				import at_pp
+				if shstat == 'view_stops':	at_pp.view_stops (request)
+				if shstat == 'set_tspp':	at_pp.set_tspp (request)
+#				print "~eval| alert ('at_pp: %s');" % shstat
+				sys.exit()
 			elif 'snow_' in shstat:
 				print '~log|'	#Snow: ', request
 				rt.snow_opts (request)

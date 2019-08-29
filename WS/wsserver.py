@@ -155,21 +155,28 @@ def	actual_directory ():
 	bm_ssys = 2
 	j = 0
 	while not exit_request:
+		# 5246034418 | МУП "Борское ПАП"
+		# 5256128672 | ООО "Транс-НН"
+		iss_tinn = "tinn IN (5246034418, 5256128672)"
 		if last_id == 0:
 			'''
 			rid = dbi.get_row ("SELECT max(id_dp) FROM vdata_pos WHERE tinn IN (SELECT inn FROM org_desc WHERE bm_ssys & %s > 0)" % bm_ssys)
 			last_id = rid[0]
 			swhere = 'tinn IN (SELECT inn FROM org_desc WHERE stat > 0 AND bm_ssys & %s = %s)' % (bm_ssys, bm_ssys)
-			'''
-			# 5246034418 | МУП "Борское ПАП"
+		###
 			rid = dbi.get_row ("SELECT max(id_dp) FROM vdata_pos WHERE tinn = %d" % 5246034418)
 			last_id = rid[0]
 			swhere = 'tinn = %d' % 5246034418
 			res = dbi.get_table('vlast_pos', swhere)
+			'''
+			rid = dbi.get_row ("SELECT max(id_dp) FROM vdata_pos WHERE %s" % iss_tinn)
+			last_id = rid[0]
+			res = dbi.get_table('vlast_pos', iss_tinn)
 		else:
 		#	swhere = 'tinn IN (SELECT inn FROM org_desc WHERE stat > 0 AND bm_ssys & %s = %s) AND id_dp > %s AND x > 0.0 ORDER BY t' % (bm_ssys, bm_ssys, last_id)
 			# 5246034418 | МУП "Борское ПАП"
-			swhere = 'tinn = %d AND id_dp > %s AND x > 0.0 ORDER BY t' % (5246034418, last_id)
+		###	swhere = 'tinn = %d AND id_dp > %s AND x > 0.0 ORDER BY t' % (5246034418, last_id)
+			swhere = iss_tinn +' AND id_dp > %s AND x > 0.0 ORDER BY t' % last_id
 			res = dbi.get_table('vdata_pos', swhere)
 	#	print	'\tswhere:', swhere
 		tm = int(time.time())
