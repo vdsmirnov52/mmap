@@ -19,6 +19,7 @@ from	base64 import b64encode	#Кодирование Access Key о которо�
 LIBRARY_DIR = r"/home/smirnov/MyTests/CGI/lib/"	# Путь к рабочей директории (библиотеке)
 sys.path.insert(0, LIBRARY_DIR)
 import	dbtools
+import	inpolygon
 
 mutex_directory = threading.Lock()      # .acquire() .release() with mutex_
 mitex_dtmcodes = threading.Lock()
@@ -70,6 +71,7 @@ def	actual_directory ():
 		codes = [tm]
 		d = res[0]
 		for r in res[1]:
+			if not r[d.index('x')]:		continue
 			code = r[d.index('code')]
 			if not code in codes:	codes.append(code)
 			with mutex_directory:
@@ -82,6 +84,7 @@ def	actual_directory ():
 					if len (cdct['r']) > 10:	cdct['r'].pop(-1)
 					cdct['t'] = r[d.index('t')]
 					cdct['sp'] = r[d.index('sp')]
+					cdct['cr5'] = int((2.5 +r[d.index('cr')])/5)*5
 					cdct['opts'] = "%s %s <br>" % (time.strftime("<span class='fligt sz12'>%T</span>", time.localtime (r[d.index('t')])), str_speed(r[d.index('sp')]))
 				else:
 					gosnum = r[d.index('gosnum')]

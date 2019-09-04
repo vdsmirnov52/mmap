@@ -73,10 +73,17 @@ function get_listTS (data) {
 			delete(listTS[code]);
 		}
 		var str_ppup = "<span class='bfinf'>"+ gosnum +"</span> " +plist[i]['opts'];
+		if (plist[i]['cr5'])
+			var img = "<img src='/img/kurs/a"+ plist[i]['cr5'] +".png'>"
+		else	var img = '<span class="fa-stack fa-lg bfinf"><i class="fa fa-circle fa-stack-2x" style="opacity: 0.7"></i><i class="fa fa-bus fa-stack-1x fa-inverse" aria-hidden="true"></i></span>'
 		if (document.myForm.view_gosnum.value == 'on')	//	str_html += rnum;	//gosnum;
+			var str_html = '<div class="btn-group bfinf">'+ img +' '+ rnum +'</div>';
+		else	var str_html = img
+/*
 			var str_html = '<div class="btn-group bfinf"><span class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x" style="opacity: 0.7"></i><i class="fa fa-bus fa-stack-1x fa-inverse" aria-hidden="true"></i></span>'+ rnum +'</div>';
 		//	var str_html = '<span class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-bus fa-stack-1x fa-inverse" aria-hidden="true"></i></span>'+ rnum ;
 		else	var str_html = '<span class="fa-stack fa-lg bfinf"><i class="fa fa-circle fa-stack-2x" style="opacity: 0.7"></i><i class="fa fa-bus fa-stack-1x fa-inverse" aria-hidden="true"></i></span>';
+*/
 		listTS[code] = L.marker(YX, {icon: L.divIcon({className: 'icon', iconAnchor: [7,26], html: str_html})}).addTo(mymap).bindPopup(str_ppup);
 
 		// Показать трек

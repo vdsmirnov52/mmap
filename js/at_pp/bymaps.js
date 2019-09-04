@@ -43,7 +43,7 @@ function	out_stops (data) {	// Показать список остановок
 		list_stops[i] = L.marker(YX, {icon: L.divIcon({className: 'icon', iconAnchor: [1,22], html: str_html})}).addTo(mymap).bindPopup(str_ppup);
 	}
 }
-
+/*
 function	out_data (data) {
 //	clear_ts_list ();
 	clear_map_object (dict_ts_list);
@@ -77,7 +77,7 @@ function view_gosnumber(j) {
 		document.myForm.view_gosnum.value='on';
 	else	document.myForm.view_gosnum.value='off';
 }
-
+*/
 function mmm (txt) {
 	var LeafIcon = L.Icon.extend({options: {iconAnchor: [12,24], popupAnchor: [0, -27], shadowAnchor: [16,37], shadowUrl: '/img/marker-shadow.png', shadowSize: [51, 37]}});
 	var redIcon = new LeafIcon({iconUrl: '/img/circle-red.svg'})

@@ -199,6 +199,7 @@ def	actual_directory ():
 					cdct['r'].insert(0, [float(r[d.index('y')]),  float(r[d.index('x')])])
 					if len (cdct['r']) > 10:	cdct['r'].pop(-1)
 					cdct['t'] = r[d.index('t')]
+					cdct['cr5'] = int((2.5 +r[d.index('cr')])/5)*5
 					cdct['sp'] = r[d.index('sp')]
 				else:
 					gosnum = r[d.index('gosnum')]

@@ -11,6 +11,8 @@ sys.path.insert(0, LIBRARY_DIR)
 
 import	dbtools
 
+dbrecv = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
+'''
 def	str_time (tm, currtm = None):
 	if not tm:	return	"<span class='bferr sz12'>Нет данных!</span>"
 	if not currtm:	currtm = int(time.time())
@@ -19,15 +21,16 @@ def	str_time (tm, currtm = None):
 	if dtm < 3600:	return	"<span class='fgrey sz12'> &nbsp; <b>%s</b> мин назад</span>" % int(dtm/60)
 	if dtm < 36000:	return	time.strftime("<span class='fligt sz12'> &nbsp; в %T </span>", time.localtime (tm))
 	return	time.strftime("<span class='ferr sz12'> &nbsp; от %T %d.%m.%Y</span>", time.localtime (tm))
-	
+
+
 def	str_speed (sp):
 	if sp:	return	" &nbsp; <span class='fligt sz12'> v:<b>%s</b>км/ч" % sp
 	return 	" &nbsp; <span class='bferr sz12'>Стоит</span>"
 
-dbrecv = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
+
 def	get_vlast_pos (request):
 	""" Читать транспорт по ИНН	"""
-
+	print "~evant| alett('Читать транспорт по ИНН')"
 	org_inn = request.get('org_inn')
 	bm_ssys = '2'
 	
@@ -69,6 +72,7 @@ def	get_vlast_pos (request):
 			if r[d.index('marka')]:	gosnum += '<br>' +r[d.index('marka')]
 			ddd.append([float(r[d.index('x')]), float(r[d.index('y')]), '%s' % str_time (r[d.index('t')], jtm).replace("'", ''), gosnum, icon])
 	return	ddd
+'''
 
 def	get_srops (org_inn):
 #	res = dbrecv.get_table ('first', "inn = %s LIMIT 55" % org_inn)
@@ -105,8 +109,8 @@ def	view_stops (request):
 
 def	get_orgs (inn = None):
 	""" Читать список Организаций	"""
-	{'id_org': 401, 'inn': 5243019838, 'bname': 'МУП "АПАТ" Арзамас'},
-	{'id_org': 728, 'inn': 5246034418, 'bname': 'МУП "Борское ПАП"'}
+#	{'id_org': 401, 'inn': 5243019838, 'bname': 'МУП "АПАТ" Арзамас'},
+#	{'id_org': 728, 'inn': 5246034418, 'bname': 'МУП "Борское ПАП"'}
 	rows = dbrecv.get_rows ("SELECT * FROM org_desc WHERE bm_ssys = 2 ORDER BY bname")
 	d = dbrecv.desc
 	list_li = []
@@ -121,12 +125,13 @@ def	get_orgs (inn = None):
 			if r[d.index('zoom')]:
 				zoom = r[d.index('zoom')]
 			else:	zoom = 9
-			sonclick = "document.myForm.org_inn.value='%s'; $('#widget').html(''); mymap.setView([%s,%s], %s);" % (inn, y, x, zoom)
-		else:	sonclick = "document.myForm.org_inn.value='%s'; $('#widget').html('');" % inn
+			sonclick = "document.myForm.org_inn.value='%s'; $('#widget').html(''); mymap.setView([%s,%s], %s); start_ws();" % (inn, y, x, zoom)
+		else:	sonclick = "document.myForm.org_inn.value='%s'; $('#widget').html(''); start_ws();" % inn
 		if inn == iinn:
 			list_li.append (format_li % (sonclick, "<span class='bfinf'>%s &nbsp; %s </span>" % (inn, r[d.index('bname')])))
 		else:	list_li.append (format_li % (sonclick, "%s &nbsp; %s" % (inn, r[d.index('bname')])))
 	return	"\n".join(list_li)
+
 
 def	set_tspp (request):
 	print """~widget|
@@ -135,8 +140,6 @@ def	set_tspp (request):
 		<i class="fa fa-times fa-lg" aria-hidden="true" onclick="$('#widget').html('')"></i>&nbsp;</span></div> 
 	<ul class="list-group"> 
 	""" % request.get('org_inn')
-#	<li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" onclick="document.myForm.org_inn.value='5243019838';"> 5243019838 &nbsp; 'МУП "АПАТ" Арзамас'	</li>
-#	<li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" onclick="document.myForm.org_inn.value='5246034418';"> 5246034418 &nbsp; 'МУП "Борское ПАП"	</li>
 	print get_orgs(request.get('org_inn'))
 	print "</ul></div>"
 
