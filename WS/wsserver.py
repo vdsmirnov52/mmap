@@ -169,7 +169,7 @@ def	actual_directory ():
 			swhere = 'tinn = %d' % 5246034418
 			res = dbi.get_table('vlast_pos', swhere)
 			'''
-			rid = dbi.get_row ("SELECT max(id_dp) FROM vdata_pos WHERE %s" % iss_tinn)
+			rid = dbi.get_row ("SELECT max(id_dp) FROM vdata_pos WHERE %s AND t > %s" % (iss_tinn, int(time.time())-300))
 			last_id = rid[0]
 			res = dbi.get_table('vlast_pos', iss_tinn)
 		else:

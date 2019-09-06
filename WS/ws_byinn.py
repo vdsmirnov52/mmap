@@ -32,10 +32,25 @@ for j in xrange(MAX_DTM):	DTM_CODES.append(None)
 
 INN_CODES =	{}
 IDS_bm_ssys =	0
+RNUM_dict =	{}
+
+def	update_rnum ():
+	global	RNUM_dict
+
+	print "update_rnum"
+#	return
+	dbg = dbtools.dbtools('host=212.193.103.21 dbname=geonornc52ru port=5432 user=smirnov')
+	query = "SELECT t.number, r.title FROM data_transport t, data_route r WHERE t.route_id = r.id;"
+	rows = dbg.get_rows(query)
+	gnim_list = list(RNUM_dict.keys())
+	for gosnum, rnum in rows:
+#		print gosnum, rnum
+		if not (gosnum in gnim_list and RNUM_dict[gosnum] == rnum):	RNUM_dict[gosnum] = rnum.strip()
+	dbg.conn.close()
 
 def	actual_directory ():
 	print	"actual_directory"
-	global	GLOB_DIRECTORY, DTM_CODES, MAX_DTM
+	global	GLOB_DIRECTORY, DTM_CODES, MAX_DTM, RNUM_dict
 	global	INN_CODES, IDS_bm_ssys
 
 	dbi = dbtools.dbtools('host=212.193.103.20 dbname=receiver port=5432 user=smirnov')
@@ -53,7 +68,7 @@ def	actual_directory ():
 		if last_id == 0:
 			rid = dbi.get_row ("SELECT max(id_dp) FROM vdata_pos WHERE tinn IN (SELECT inn FROM org_desc WHERE bm_ssys & %s > 0)" % IDS_bm_ssys)
 			last_id = rid[0]
-			swhere = 'tinn IN (SELECT inn FROM org_desc WHERE bm_ssys & %s > 0)' % IDS_bm_ssys
+			swhere = 'tinn IN (SELECT inn FROM org_desc WHERE bm_ssys & %s > 0) AND t > %s' % (IDS_bm_ssys, int(time.time())- 300)
 			res = dbi.get_table('vlast_pos', swhere)
 		else:
 			swhere = 'tinn IN (SELECT inn FROM org_desc WHERE bm_ssys & %s > 0) AND id_dp > %s ORDER BY t' % (IDS_bm_ssys, last_id)
@@ -96,7 +111,8 @@ def	actual_directory ():
 					else:	rem = "%s" % bname			# r[d.index('bname')]
 					opts = "%s %s <br>" % (time.strftime("<span class='fligt sz12'>%T</span>", time.localtime (r[d.index('t')])), str_speed(r[d.index('sp')]))
 					GLOB_DIRECTORY[code] = {'r': [[float(r[d.index('y')]),  float(r[d.index('x')])]], 'gosnum': gosnum, 't': r[d.index('t')], 'sp': r[d.index('sp')], 'rem': rem, 'opts': opts }
-					if (tm - r[d.index('t')]) > 3600:    GLOB_DIRECTORY[code]['style'] = "color: #a77"
+					if gosnum in RNUM_dict.keys():		GLOB_DIRECTORY[code]['rnum'] = RNUM_dict[gosnum]
+					if (tm - r[d.index('t')]) > 3600:	GLOB_DIRECTORY[code]['style'] = "color: #a77"
 
 			if INN_CODES.has_key(r[d.index('tinn')]):
 				if not code in INN_CODES[r[d.index('tinn')]]:
@@ -117,10 +133,8 @@ def	actual_directory ():
 			dsleep += 1
 			print "dsleep", dsleep
 		else:	dsleep = 1
-		'''
-		print	"dsleep:", dsleep, len(res[1]), "\tlast_id:", last_id
-		time.sleep(1)
-		'''
+		if j > 1200:	update_rnum();	j = 0
+		else:	j += 1
 		time.sleep(dsleep)
 	
 def	str_speed (sp):
@@ -377,6 +391,7 @@ if __name__ == "__main__":
 	print HEADS
 	print create_handshake (HEADS)
 	'''
+	update_rnum ()
 	try:
 		threading.Thread(target = actual_directory, args = ()).start()
 		time.sleep(2)
