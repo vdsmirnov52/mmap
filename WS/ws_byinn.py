@@ -314,7 +314,7 @@ def handle (s, addr):
 					IDS_bm_ssys = int(jbm_ssys)
 				else:	IDS_bm_ssys = 64		# ЖКХ-М Уборка, вывоз мусора
 				ddata = get_all_poss (intm, request)
-				print "QQQ\t", len(ddata), time.strftime("\t%T", time.localtime (time.time ()))
+				print "QQQ\t", time.strftime("\t%T", time.localtime (time.time ()))	#, ddata
 				if ddata:
 					pdata = pack_frame("~eval| get_listTS(%s)" % json.dumps(ddata), 0x1)
 					dataln = len(pdata)

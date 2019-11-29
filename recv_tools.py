@@ -341,19 +341,27 @@ def	update_recv_ts (request):
 				swhere = "inn IN (%s)" % ', '.join(inns)
 #	query = "SELECT id_ts, gosnum, marka, a.device_id, inn, uin FROM transports t, organizations o, atts a WHERE %s AND t.id_org = o.id_org AND id_ts = autos AND a.last_date > '%s' ORDER BY o.id_org;" % (
 #		swhere, time.strftime("%Y-%m-%d 00:00:00", time.localtime (time.time ())))
-	query = "SELECT id_ts, gosnum, marka, a.device_id, inn, uin FROM transports t, organizations o, atts a WHERE %s AND t.id_org = o.id_org AND id_ts = autos ORDER BY o.id_org;" % swhere
+#	query = "SELECT id_ts, gosnum, marka, a.device_id, inn, uin FROM transports t, organizations o, atts a WHERE %s AND t.id_org = o.id_org AND id_ts = autos ORDER BY o.id_org;" % swhere
+	where_list = [swhere, #"t.bm_status < 1024",	# Только 'Транспорт в работе'
+		"t.id_org = o.id_org", "id_ts = autos",
+		"a.last_date > '%s'" % time.strftime("%Y-%m-%d 00:00:00", time.localtime (time.time ()))]
+	query = "SELECT id_ts, gosnum, marka, a.device_id, inn, uin, t.bm_status FROM transports t, organizations o, atts a WHERE %s ORDER BY o.id_org;" % " AND ".join(where_list)
 #	print query
-	'''
-	return
-	'''
+
 	gnum_list = []
 	rows = dbcntr.get_rows (query)
 	if not rows:
 		print query
 		return
 	for r in rows:
-		id_ts, gosnum, marka, device_id, inn, uin = r
+		id_ts, gosnum, marka, device_id, inn, uin, bm_status = r
+	#	print bm_status
 		gnum_list.append(gosnum)
+		if bm_status >= 1024:	#########################
+			query = "DELETE FROM recv_ts WHERE gosnum = '%s'" % gosnum
+		#	print query, dbi.qexecute (query)
+			continue
+
 		if marka:
 			marka = "'%s'" % marka
 		else:	marka = "NULL"

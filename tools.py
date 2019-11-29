@@ -28,8 +28,9 @@ def	get_org (inn = None):
 	return	DBR.get_dict('select * FROM org_desc WHERE inn = %s' % inn)	
 
 def	get_transports(orgrow):
-	""" Поиск транспорта принадлежащего организации get_org (INN) 	"""
-	res = DBC.get_table('transports', 'id_org = %s' % orgrow['id_org'], cols='id_ts, gosnum, marka, modele, device_id, bm_status')
+	""" Принудитеьно Обновить транспорт организации.
+	Поиск транспорта принадлежащего организации get_org (INN) 	"""
+	res = DBC.get_table('wtransports', 'id_org = %s' % orgrow['id_org'], cols='id_ts, gosnum, marka, modele, device_id, bm_status')
 #	res = DBC.get_table('transports t JOIN transporttype tt ON t.transporttype_id = tt.id', 'id_org = %s' % orgrow['id_org'], cols='id_ts, gosnum, marka, modele, device_id, tt.description AS ttd')
 	d = res[0]
 	for r in res[1]:
@@ -69,7 +70,7 @@ def	get_organizations (bm_ssys = None, inn = None):
 	d = res[0]
 	count_ts = 0
 	for r in res[1]:
-		jr = DBC.get_row("select count(*) FROM transports WHERE (bm_status & 7168) = 0 AND id_org = %s" % r[d.index('id_org')])
+		jr = DBC.get_row("select count(*) FROM wtransports WHERE (bm_status & 7168) = 0 AND id_org = %s" % r[d.index('id_org')])
 #		for c in r:	print c, '\t',
 #		print jr, jor
 		if jr[0] > 0:
@@ -133,6 +134,7 @@ if __name__ == "__main__":
 		DBR = dbtools.dbtools(DBASES['receiver'])
 
 	#	get_transports (get_org (5262021430))
+	#	get_transports (get_org (5257072581))
 	#	get_organizations (131072)
 		get_organizations (bm_ssys, org_inn)
 		get_org ()

@@ -84,7 +84,7 @@ function get_listTS (data) {
 	//		var str_html = '<div class="btn-group bfinf"><span class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x" style="opacity: 0.7"></i><i class="fa fa-bus fa-stack-1x fa-inverse" aria-hidden="true"></i></span>'+ rnum +'</div>';
 	//	else	var str_html = '<span class="fa-stack fa-lg bfinf"><i class="fa fa-circle fa-stack-2x" style="opacity: 0.7"></i><i class="fa fa-bus fa-stack-1x fa-inverse" aria-hidden="true"></i></span>';
 		else	var str_html = img
-		listTS[code] = L.marker(YX, {icon: L.divIcon({className: 'icon', iconAnchor: [1,13], html: str_html})}).addTo(mymap).bindPopup(str_ppup);
+		listTS[code] = L.marker(YX, {icon: L.divIcon({className: 'icon', iconAnchor: [2,20], html: str_html})}).addTo(mymap).bindPopup(str_ppup);
 /*
 		var iIcon = new LeafIcon({iconUrl: "/img/kurs/a"+ plist[i]['cr5'] +".png" });
 		if (document.myForm.view_gosnum.value == 'on') {

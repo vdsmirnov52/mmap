@@ -135,7 +135,7 @@ def	get_orgs (inn = None):
 
 def	set_tspp (request):
 	print """~widget|
-	<div class="wffront" style="width: 560px; max-width: 90%%; max-height: 350px; left: 310px; ">
+	<div class="wffront" style="width: 560px; max-width: 90%%; max-height: 500px; left: 310px; ">
 	<div class="list-group-item list-group-item-action active"><span class="tit">Список Организаций</span><span class="float-right"> org_inn: %s &nbsp;
 		<i class="fa fa-times fa-lg" aria-hidden="true" onclick="$('#widget').html('')"></i>&nbsp;</span></div> 
 	<ul class="list-group"> 
