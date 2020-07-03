@@ -256,6 +256,8 @@ def handle (s, addr):
 		while True:
 			data = s.recv(1024)
 			if not data:	break
+		#	for c in data:	print ord(c),
+		#	print "data"
 			unpdata = unpack_frame (data)
 		#	print "unpdata", unpdata, time.strftime("\t%T", time.localtime (time.time ()))
 			if unpdata['opcode'] == 0x8:	break

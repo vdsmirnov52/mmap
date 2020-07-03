@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Open Map</title>
+    <title>АнтиСнег РНИС</title>
 	<link rel="stylesheet" href="/js/leaflet/leaflet.css"	crossorigin="" />
 	<link rel="icon" href="/img/favicon.png" type="image/png"/>
 	<script src="/js/leaflet/leaflet.js" crossorigin=""></script>
@@ -26,6 +26,12 @@
 	<script type='text/javascript' src='/js/mmap/document_ready.js'></script>
 	<script type='text/javascript' src='/js/mmap/bymaps.js'></script>
 	<script type='text/javascript' src='/js/mmap/ws_functions.js'></script>
+<!--ipt src="/js/hcharts/code/highcharts.js"></script>
+/var/www/html/jq/ui/jquery-ui.js:
+	<link rel='stylesheet' type='text/css' href='/css/calendar.css' />
+	<script type='text/javascript' src='/js/calendar.js'></script-->
+<link rel='stylesheet' type='text/css' href='/js/agro/jquery-ui.css' />
+<script type='text/javascript' src='/js/agro/jquery-ui.js'></script>
 
 <script type="text/javascript">
 ///////////////////////////////////////////////////
@@ -67,15 +73,15 @@ function	config_ts () {	set_shadow('view_ts_config')	}
 			</div>
 		</div>
 		<div class="col">
-			<div class="asbutton" id="set_opts" onclick="set_shadow ('set_opts');" title="set_opts">
+			<div class="asbutton" id="set_opts" onclick="set_shadow ('set_opts');" title="Данные РНИС">
 			<i class="fa fa-bookmark-o fa-lg" aria-hidden="true"></i><span class="button-text">РНИС</span>
 			</div>
 		</div>
-		<!--div >
-			<div class="asbutton" id="set_opts" onclick="set_shadow ('snow_zone');" title='snow_zone'>
-				<i class="fa fa-object-ungroup fa-lg" aria-hidden="true"></i> </div>
+		<div class="col" >
+			<div class="asbutton" id="set_opts" onclick="set_shadow ('statistic');" title='Статистик'>
+				<i class="fa fa-bar-chart fa-lg" aria-hidden="true"></i> Стат. </div>
 		</div>
-		<div >
+		<!--div >
 			<div class="asbutton" id="set_opts" onclick="set_shadow ('snow_test');" title='snow_test'>
 				<i class="fa fa-snowflake-o fa-lg" aria-hidden="true"></i> </div>
 		</div-->

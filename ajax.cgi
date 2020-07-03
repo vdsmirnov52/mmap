@@ -149,8 +149,7 @@ def     check ():
 			elif shstat == 'view_routes':
 				rt.view_routes (request)
 			elif shstat == 'set_opts':
-				print '~log|'	#, request
-				print "ZZZ"
+			#	print '~log|'	#, request
 				rt.view_streets(request)
 			elif shstat in ['view_stops', 'set_tspp']:
 				import at_pp
@@ -161,6 +160,10 @@ def     check ():
 			elif 'snow_' in shstat:
 				print '~log|'	#Snow: ', request
 				rt.snow_opts (request)
+			elif shstat == 'statistic':
+				import	statistic_ts as stts
+				print '~widget|statistic:', request, os.path.split(referer)[-1]
+				stts.test(request, os.path.split(referer))
 			else:
 				print '~log|shstat:', shstat, request
 				print '<br>HTTP_REFERER:', referer , os.path.split(referer)[-1]

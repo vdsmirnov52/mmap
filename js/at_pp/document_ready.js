@@ -39,10 +39,14 @@ var	marker = L.marker([56.32354, 43.99121]).addTo(mymap)
 	.openPopup();
 */
 var	roadsLayer = new L.tileLayer('http://212.193.103.5/{alias}/{z}/{x}/{y}.png', {maxZoom: 18, attribution: rnic_nn, alias: 'enk2'});
+var	locLayer = new L.tileLayer('http://10.10.2.241/{alias}/{z}/{x}/{y}.png', {maxZoom: 18, attribution: rnic_nn, alias: 'tiles'});
 var	yndx = new L.Yandex();
 var	ytraffic = new L.Yandex("null", {traffic:true, opacity:0.8, overlay:true});
 //var	baseMaps = { "OpenStreetMap": osmLayer, 'L.Yandex': yndx };
-var	baseMaps = { "L.Yandex": yndx, "OpenStreetMap": osmLayer };
+var	baseMaps = { "L.Yandex": yndx, "OpenStreetMap": osmLayer,
+	'212.193.103.5 roadsLayer': roadsLayer,
+	'10.10.2.241 locLayer': locLayer,
+	};
 var	overlays = { };	//"Marker": marker};
 
 var	layersControl = new L.Control.Layers(baseMaps, overlays),	// overlayMaps),

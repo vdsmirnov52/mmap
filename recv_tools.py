@@ -355,7 +355,7 @@ def	update_recv_ts (request):
 		return
 	for r in rows:
 		id_ts, gosnum, marka, device_id, inn, uin, bm_status = r
-	#	print bm_status
+		print bm_status
 		gnum_list.append(gosnum)
 		if bm_status >= 1024:	#########################
 			query = "DELETE FROM recv_ts WHERE gosnum = '%s'" % gosnum
@@ -840,7 +840,7 @@ def	view_streets (request):
 	bm_ssys = request.get('bm_ssys')
 	sel_org  = select_org (org_inn, bm_ssys, 'set_opts')
 	and_opts = [
-		('AND last_date IS NOT NULL','Передавали данные'), ('AND last_date IS NULL','Нет данных'),
+		('AND last_date IS NOT NULL','Передавали данные'), ('AND last_date IS NOT NULL AND bm_wtime > 511','Передавали сегодня'), ('AND last_date IS NULL','Нет данных'),
 		('AND last_date IS NOT NULL AND bm_wtime & 7 = 0','Нет сегодня'), ('AND last_date IS NOT NULL AND bm_wtime = 0','Нет 10 дней'),
 		('quality', 'Сомнительное качество'),
 		]
